@@ -1,4 +1,4 @@
-program recastnavigation;
+program RecastNavigationDelphi;
 uses
   //FastMM4,
   Vcl.Forms,

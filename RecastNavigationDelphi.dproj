@@ -3,7 +3,7 @@
         <ProjectGuid>{0A13FEB1-E6D6-41B9-8E31-55ADEEB2C28B}</ProjectGuid>
         <ProjectVersion>16.0</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
-        <MainSource>recastnavigation.dpr</MainSource>
+        <MainSource>RecastNavigationDelphi.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -49,7 +49,7 @@
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <VerInfo_Locale>1049</VerInfo_Locale>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
-        <SanitizedProjectName>recastnavigation</SanitizedProjectName>
+        <SanitizedProjectName>RecastNavigationDelphi</SanitizedProjectName>
         <DCC_E>false</DCC_E>
         <DCC_N>false</DCC_N>
         <DCC_S>false</DCC_S>
@@ -167,7 +167,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">recastnavigation.dpr</Source>
+                    <Source Name="MainSource">RecastNavigationDelphi.dpr</Source>
                 </Source>
                 <Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclDataSnapFireDAC210.bpl">Embarcadero DataSnap FireDAC</Excluded_Packages>
@@ -226,15 +226,15 @@
                 </VersionInfoKeys>
             </Delphi.Personality>
             <Deployment>
-                <DeployFile LocalName="Win32\Debug\recastnavigation.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="Win32\Debug\RecastNavigationDelphi.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>recastnavigation.exe</RemoteName>
+                        <RemoteName>RecastNavigationDelphi.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="recastnavigation.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="RecastNavigationDelphi.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>recastnavigation.exe</RemoteName>
+                        <RemoteName>RecastNavigationDelphi.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
