@@ -13,8 +13,10 @@ Source code version:
 
 Guidelines:
  - RecastNavigationDelphi is a straight clone of RecastNavigation with as little changes as possible, to allow to keep projects synced in the future.
+ - Any changes/improvements to the lib functionality should be first included into C++ master to avoid separation.
  - RND follows RN structure very closely, except for GUI stuff, which is VCL for simplicity instead of imGUI RN solution.
- - File names are the same, with "RN_" prefix.
+ - All file names are the same, but with an "RN_" prefix. 
+ - Some units were split to avoid circular dependencies, they are called RN_UnitNameHelper.
 
 
 Hints about the code:
