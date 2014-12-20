@@ -24,38 +24,38 @@ uses Math, SysUtils,
 
 /// Tool types.
 type
-TSampleToolType =
-(
-  TOOL_NONE,
-  TOOL_TILE_EDIT,
-  TOOL_TILE_HIGHLIGHT,
-  TOOL_TEMP_OBSTACLE,
-  TOOL_NAVMESH_TESTER,
-  TOOL_NAVMESH_PRUNE,
-  TOOL_OFFMESH_CONNECTION,
-  TOOL_CONVEX_VOLUME,
-  TOOL_CROWD,
-  MAX_TOOLS
-);
+  TSampleToolType =
+  (
+    TOOL_NONE,
+    TOOL_TILE_EDIT,
+    TOOL_TILE_HIGHLIGHT,
+    TOOL_TEMP_OBSTACLE,
+    TOOL_NAVMESH_TESTER,
+    TOOL_NAVMESH_PRUNE,
+    TOOL_OFFMESH_CONNECTION,
+    TOOL_CONVEX_VOLUME,
+    TOOL_CROWD,
+    MAX_TOOLS
+  );
 
-/// These are just sample areas to use consistent values across the samples.
-/// The use should specify these base on his needs.
-TSamplePolyAreas =
-(
-  SAMPLE_POLYAREA_GROUND,
-  SAMPLE_POLYAREA_WATER,
-  SAMPLE_POLYAREA_ROAD,
-  SAMPLE_POLYAREA_DOOR,
-  SAMPLE_POLYAREA_GRASS,
-  SAMPLE_POLYAREA_JUMP
-);
-const
-  SAMPLE_POLYFLAGS_WALK    = $01;    // Ability to walk (ground, grass, road)
-  SAMPLE_POLYFLAGS_SWIM    = $02;    // Ability to swim (water).
-  SAMPLE_POLYFLAGS_DOOR    = $04;    // Ability to move through doors.
-  SAMPLE_POLYFLAGS_JUMP    = $08;    // Ability to jump.
-  SAMPLE_POLYFLAGS_DISABLED  = $10;    // Disabled polygon
-  SAMPLE_POLYFLAGS_ALL    = $ffff;  // All abilities.
+  /// These are just sample areas to use consistent values across the samples.
+  /// The use should specify these base on his needs.
+  TSamplePolyAreas =
+  (
+    SAMPLE_POLYAREA_GROUND,
+    SAMPLE_POLYAREA_WATER,
+    SAMPLE_POLYAREA_ROAD,
+    SAMPLE_POLYAREA_DOOR,
+    SAMPLE_POLYAREA_GRASS,
+    SAMPLE_POLYAREA_JUMP
+  );
+  const
+    SAMPLE_POLYFLAGS_WALK    = $01;    // Ability to walk (ground, grass, road)
+    SAMPLE_POLYFLAGS_SWIM    = $02;    // Ability to swim (water).
+    SAMPLE_POLYFLAGS_DOOR    = $04;    // Ability to move through doors.
+    SAMPLE_POLYFLAGS_JUMP    = $08;    // Ability to jump.
+    SAMPLE_POLYFLAGS_DISABLED  = $10;    // Disabled polygon
+    SAMPLE_POLYFLAGS_ALL    = $ffff;  // All abilities.
 
 type
   TSamplePartitionType =

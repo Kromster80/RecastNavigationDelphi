@@ -42,7 +42,7 @@ begin
   if (freq = 0) then
     QueryPerformanceFrequency(freq);
   elapsed := &end - start;
-  Result := Trunc(elapsed*1000000 / freq);
+  Result := Trunc(elapsed * 1000000 / freq);
 end;
 
 end.

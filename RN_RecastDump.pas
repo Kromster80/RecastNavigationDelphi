@@ -457,7 +457,7 @@ var t: Integer;
 begin
   t := ctx.getAccumulatedTime(&label);
   if (t < 0) then Exit;
-  ctx.log(RC_LOG_PROGRESS, Format('%s:'#9'%.2fms'#9'(%.1f%%)', [name, t/1000.0, t*pc]));
+  ctx.log(RC_LOG_PROGRESS, Format('%s: %.2fms'#9'(%.1f%%)', [name, t / 1000000.0, t * pc]));
 end;
 
 procedure duLogBuildTimes(ctx: TrcContext; totalTimeUsec: Integer);
@@ -466,33 +466,33 @@ begin
   pc := 100.0 / totalTimeUsec;
 
   ctx.log(RC_LOG_PROGRESS, 'Build Times');
-  logLine(ctx, RC_TIMER_RASTERIZE_TRIANGLES,      '- Rasterize',              pc);
-  logLine(ctx, RC_TIMER_BUILD_COMPACTHEIGHTFIELD,  '- Build Compact',          pc);
-  logLine(ctx, RC_TIMER_FILTER_BORDER,            '- Filter Border',          pc);
-  logLine(ctx, RC_TIMER_FILTER_WALKABLE,          '- Filter Walkable',        pc);
-  logLine(ctx, RC_TIMER_ERODE_AREA,                '- Erode Area',             pc);
-  logLine(ctx, RC_TIMER_MEDIAN_AREA,              '- Median Area',            pc);
-  logLine(ctx, RC_TIMER_MARK_BOX_AREA,            '- Mark Box Area',          pc);
-  logLine(ctx, RC_TIMER_MARK_CONVEXPOLY_AREA,      '- Mark Convex Area',       pc);
-  logLine(ctx, RC_TIMER_MARK_CYLINDER_AREA,        '- Mark Cylinder Area',     pc);
-  logLine(ctx, RC_TIMER_BUILD_DISTANCEFIELD,      '- Build Distance Field',   pc);
-  logLine(ctx, RC_TIMER_BUILD_DISTANCEFIELD_DIST,  '    - Distance',           pc);
-  logLine(ctx, RC_TIMER_BUILD_DISTANCEFIELD_BLUR,  '    - Blur',               pc);
-  logLine(ctx, RC_TIMER_BUILD_REGIONS,            '- Build Regions',          pc);
-  logLine(ctx, RC_TIMER_BUILD_REGIONS_WATERSHED,  '    - Watershed',          pc);
-  logLine(ctx, RC_TIMER_BUILD_REGIONS_EXPAND,      '      - Expand',           pc);
-  logLine(ctx, RC_TIMER_BUILD_REGIONS_FLOOD,      '      - Find Basins',      pc);
-  logLine(ctx, RC_TIMER_BUILD_REGIONS_FILTER,      '    - Filter',             pc);
-  logLine(ctx, RC_TIMER_BUILD_LAYERS,              '- Build Layers',           pc);
-  logLine(ctx, RC_TIMER_BUILD_CONTOURS,            '- Build Contours',         pc);
-  logLine(ctx, RC_TIMER_BUILD_CONTOURS_TRACE,      '    - Trace',              pc);
-  logLine(ctx, RC_TIMER_BUILD_CONTOURS_SIMPLIFY,  '    - Simplify',           pc);
-  logLine(ctx, RC_TIMER_BUILD_POLYMESH,            '- Build Polymesh',         pc);
-  logLine(ctx, RC_TIMER_BUILD_POLYMESHDETAIL,      '- Build Polymesh Detail',  pc);
-  logLine(ctx, RC_TIMER_MERGE_POLYMESH,            '- Merge Polymeshes',       pc);
-  logLine(ctx, RC_TIMER_MERGE_POLYMESHDETAIL,      '- Merge Polymesh Details', pc);
+  logLine(ctx, RC_TIMER_RASTERIZE_TRIANGLES,      '- Rasterize             ', pc);
+  logLine(ctx, RC_TIMER_BUILD_COMPACTHEIGHTFIELD, '- Build Compact         ', pc);
+  logLine(ctx, RC_TIMER_FILTER_BORDER,            '- Filter Border         ', pc);
+  logLine(ctx, RC_TIMER_FILTER_WALKABLE,          '- Filter Walkable       ', pc);
+  logLine(ctx, RC_TIMER_ERODE_AREA,               '- Erode Area            ', pc);
+  logLine(ctx, RC_TIMER_MEDIAN_AREA,              '- Median Area           ', pc);
+  logLine(ctx, RC_TIMER_MARK_BOX_AREA,            '- Mark Box Area         ', pc);
+  logLine(ctx, RC_TIMER_MARK_CONVEXPOLY_AREA,     '- Mark Convex Area      ', pc);
+  logLine(ctx, RC_TIMER_MARK_CYLINDER_AREA,       '- Mark Cylinder Area    ', pc);
+  logLine(ctx, RC_TIMER_BUILD_DISTANCEFIELD,      '- Build Distance Field  ', pc);
+  logLine(ctx, RC_TIMER_BUILD_DISTANCEFIELD_DIST, '  - Distance            ', pc);
+  logLine(ctx, RC_TIMER_BUILD_DISTANCEFIELD_BLUR, '  - Blur                ', pc);
+  logLine(ctx, RC_TIMER_BUILD_REGIONS,            '- Build Regions         ', pc);
+  logLine(ctx, RC_TIMER_BUILD_REGIONS_WATERSHED,  '  - Watershed           ', pc);
+  logLine(ctx, RC_TIMER_BUILD_REGIONS_EXPAND,     '    - Expand            ', pc);
+  logLine(ctx, RC_TIMER_BUILD_REGIONS_FLOOD,      '    - Find Basins       ', pc);
+  logLine(ctx, RC_TIMER_BUILD_REGIONS_FILTER,     '  - Filter              ', pc);
+  logLine(ctx, RC_TIMER_BUILD_LAYERS,             '- Build Layers          ', pc);
+  logLine(ctx, RC_TIMER_BUILD_CONTOURS,           '- Build Contours        ', pc);
+  logLine(ctx, RC_TIMER_BUILD_CONTOURS_TRACE,     '  - Trace               ', pc);
+  logLine(ctx, RC_TIMER_BUILD_CONTOURS_SIMPLIFY,  '  - Simplify            ', pc);
+  logLine(ctx, RC_TIMER_BUILD_POLYMESH,           '- Build Polymesh        ', pc);
+  logLine(ctx, RC_TIMER_BUILD_POLYMESHDETAIL,     '- Build Polymesh Detail ', pc);
+  logLine(ctx, RC_TIMER_MERGE_POLYMESH,           '- Merge Polymeshes      ', pc);
+  logLine(ctx, RC_TIMER_MERGE_POLYMESHDETAIL,     '- Merge Polymesh Details', pc);
 
-  ctx.log(RC_LOG_PROGRESS, Format('=== TOTAL:'#9'%.2fms', [totalTimeUsec/1000.0]));
+  ctx.log(RC_LOG_PROGRESS, Format('=== TOTAL:                %.2fms', [totalTimeUsec / 1000000.0]));
 end;
 
 end.
