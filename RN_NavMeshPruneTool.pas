@@ -339,7 +339,7 @@ begin
   query := m_sample.getNavMeshQuery;
   if (query = nil) then Exit;
 
-  dtVcopy(@m_hitPos, p);
+  dtVcopy(@m_hitPos[0], p);
   m_hitPosSet := true;
 
   if (m_flags = nil) then
@@ -352,7 +352,7 @@ begin
   // Delphi: Assume C++ invokes constructor
   filter := TdtQueryFilter.Create;
   ref := 0;
-  query.findNearestPoly(p, @ext, filter, @ref, nil);
+  query.findNearestPoly(p, @ext[0], filter, @ref, nil);
 
   floodNavmesh(nav, m_flags, ref, 1);
 

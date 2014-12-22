@@ -226,7 +226,7 @@ begin
 	Result := n;
 end;
 
-function TdtProximityGrid.getBounds(): PInteger; begin Result := @m_bounds; end;
+function TdtProximityGrid.getBounds(): PInteger; begin Result := @m_bounds[0]; end;
 function TdtProximityGrid.getCellSize(): Single; begin Result := m_cellSize; end;
 
 end.

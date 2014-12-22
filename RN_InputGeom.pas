@@ -51,7 +51,7 @@ type
     m_offMeshConDirs: array [0..MAX_OFFMESH_CONNECTIONS-1] of Byte;
     m_offMeshConAreas: array [0..MAX_OFFMESH_CONNECTIONS-1] of Byte;
     m_offMeshConFlags: array [0..MAX_OFFMESH_CONNECTIONS-1] of Word;
-    m_offMeshConId: array [0..MAX_OFFMESH_CONNECTIONS-1] of Integer;
+    m_offMeshConId: array [0..MAX_OFFMESH_CONNECTIONS-1] of Cardinal;
     m_offMeshConCount: Integer;
     ///@}
 
@@ -109,32 +109,32 @@ uses RN_RecastHelper;
 function intersectSegmentTriangle(sp, sq, a, b, c: PSingle; t: PSingle): Boolean;
 var v,w,d: Single; ab,ac,qp,ap,norm,e: array [0..2] of Single;
 begin
-  rcVsub(@ab, b, a);
-  rcVsub(@ac, c, a);
-  rcVsub(@qp, sp, sq);
+  rcVsub(@ab[0], b, a);
+  rcVsub(@ac[0], c, a);
+  rcVsub(@qp[0], sp, sq);
 
   // Compute triangle normal. Can be precalculated or cached if
   // intersecting multiple segments against the same triangle
-  rcVcross(@norm, @ab, @ac);
+  rcVcross(@norm[0], @ab[0], @ac[0]);
 
   // Compute denominator d. If d <= 0, segment is parallel to or points
   // away from triangle, so exit early
-  d := rcVdot(@qp, @norm);
+  d := rcVdot(@qp[0], @norm[0]);
   if (d <= 0.0) then Exit(false);
 
   // Compute intersection t value of pq with plane of triangle. A ray
   // intersects iff 0 <= t. Segment intersects iff 0 <= t <= 1. Delay
   // dividing by d until intersection has been found to pierce triangle
-  rcVsub(@ap, sp, a);
-  t^ := rcVdot(@ap, @norm);
+  rcVsub(@ap[0], sp, a);
+  t^ := rcVdot(@ap[0], @norm[0]);
   if (t^ < 0.0) then Exit(false);
   if (t^ > d) then Exit(false); // For segment; exclude this code line for a ray test
 
   // Compute barycentric coordinate components and test if within bounds
-  rcVcross(@e, @qp, @ap);
-  v := rcVdot(@ac, @e);
+  rcVcross(@e[0], @qp[0], @ap[0]);
+  v := rcVdot(@ac[0], @e[0]);
   if (v < 0.0) or (v > d) then Exit(false);
-  w := -rcVdot(@ab, @e);
+  w := -rcVdot(@ab[0], @e[0]);
   if (w < 0.0) or (v + w > d) then Exit(false);
 
   // Segment/ray intersects triangle. Perform delayed division
@@ -184,42 +184,42 @@ end;
 
 function TInputGeom.getMeshBoundsMax: PSingle;
 begin
-  Result := @m_meshBMax;
+  Result := @m_meshBMax[0];
 end;
 
 function TInputGeom.getMeshBoundsMin: PSingle;
 begin
-  Result := @m_meshBMin;
+  Result := @m_meshBMin[0];
 end;
 
 function TInputGeom.getOffMeshConnectionAreas: PByte;
 begin
-  Result := @m_offMeshConAreas;
+  Result := @m_offMeshConAreas[0];
 end;
 
 function TInputGeom.getOffMeshConnectionDirs: PByte;
 begin
-  Result := @m_offMeshConDirs;
+  Result := @m_offMeshConDirs[0];
 end;
 
 function TInputGeom.getOffMeshConnectionFlags: PWord;
 begin
-  Result := @m_offMeshConFlags;
+  Result := @m_offMeshConFlags[0];
 end;
 
 function TInputGeom.getOffMeshConnectionId: PCardinal;
 begin
-  Result := @m_offMeshConId;
+  Result := @m_offMeshConId[0];
 end;
 
 function TInputGeom.getOffMeshConnectionRads: PSingle;
 begin
-  Result := @m_offMeshConRads;
+  Result := @m_offMeshConRads[0];
 end;
 
 function TInputGeom.getOffMeshConnectionVerts: PSingle;
 begin
-  Result := @m_offMeshConVerts;
+  Result := @m_offMeshConVerts[0];
 end;
 
 function TInputGeom.loadMesh(ctx: TrcContext; const filepath: string): Boolean;
@@ -414,18 +414,18 @@ function TInputGeom.raycastMesh(src, dst: PSingle; tmin: PSingle): Boolean;
 var dir: array [0..2] of Single; p,q: array [0..1] of Single; btmin,btmax,t: Single; hit: Boolean; ncid: Integer; verts: PSingle;
 cid: array [0..511] of Integer; tris: PInteger; i,j,ntris: Integer; node: PrcChunkyTriMeshNode;
 begin
-  rcVsub(@dir, dst, src);
+  rcVsub(@dir[0], dst, src);
 
   // Prune hit ray.
 
-  if (not isectSegAABB(src, dst, @m_meshBMin, @m_meshBMax, @btmin, @btmax)) then Exit(false);
+  if (not isectSegAABB(src, dst, @m_meshBMin[0], @m_meshBMax[0], @btmin, @btmax)) then Exit(false);
 
   p[0] := src[0] + (dst[0]-src[0])*btmin;
   p[1] := src[2] + (dst[2]-src[2])*btmin;
   q[0] := src[0] + (dst[0]-src[0])*btmax;
   q[1] := src[2] + (dst[2]-src[2])*btmax;
 
-  ncid := rcGetChunksOverlappingSegment(@m_chunkyMesh, @p, @q, @cid, 512);
+  ncid := rcGetChunksOverlappingSegment(@m_chunkyMesh, @p[0], @q[0], @cid[0], 512);
   if (ncid = 0) then
     Exit(false);
 

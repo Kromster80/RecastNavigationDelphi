@@ -170,7 +170,7 @@ begin
 		// Handle query start.
 		if (q.status = 0) then
 		begin
-			q.status := m_navquery.initSlicedFindPath(q.startRef, q.endRef, @q.startPos, @q.endPos, q.filter);
+			q.status := m_navquery.initSlicedFindPath(q.startRef, q.endRef, @q.startPos[0], @q.endPos[0], q.filter);
 		end;
 		// Handle query in progress.
 		if (dtStatusInProgress(q.status)) then
@@ -216,9 +216,9 @@ begin
 	
 	q := @m_queue[slot];
 	q.ref := ref;
-	dtVcopy(@q.startPos, startPos);
+	dtVcopy(@q.startPos[0], startPos);
 	q.startRef := startRef;
-	dtVcopy(@q.endPos, endPos);
+	dtVcopy(@q.endPos[0], endPos);
 	q.endRef := endRef;
 
 	q.status := 0;

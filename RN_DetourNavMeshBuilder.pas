@@ -21,6 +21,8 @@ unit RN_DetourNavMeshBuilder;
 interface
 
 type
+  PPByte = ^PByte;
+
 /// Represents the source data used to build an navigation mesh tile.
 /// @ingroup detour
 PdtNavMeshCreateParams = ^TdtNavMeshCreateParams;
@@ -109,7 +111,7 @@ end;
 ///  @param[out]  outData    The resulting tile data.
 ///  @param[out]  outDataSize  The size of the tile data array.
 /// @return True if the tile data was successfully created.
-function dtCreateNavMeshData(params: PdtNavMeshCreateParams; outData: PPointer; outDataSize: PInteger): Boolean;
+function dtCreateNavMeshData(params: PdtNavMeshCreateParams; outData: PPByte; outDataSize: PInteger): Boolean;
 
 /// Swaps the endianess of the tile data's header (#dtMeshHeader).
 ///  @param[in,out]  data    The tile data array.
@@ -262,7 +264,7 @@ begin
   else
   begin
     // Split
-    calcExtends(items, nitems, imin, imax, @node.bmin, @node.bmax);
+    calcExtends(items, nitems, imin, imax, @node.bmin[0], @node.bmax[0]);
 
     axis := longestAxis(node.bmax[0] - node.bmin[0],
                  node.bmax[1] - node.bmin[1],
@@ -379,7 +381,7 @@ end;
 /// mesh.
 ///
 /// @see dtNavMesh, dtNavMesh::addTile()
-function dtCreateNavMeshData(params: PdtNavMeshCreateParams; outData: PPointer; outDataSize: PInteger): Boolean;
+function dtCreateNavMeshData(params: PdtNavMeshCreateParams; outData: PPByte; outDataSize: PInteger): Boolean;
 var nvp: Integer; offMeshConClass: PByte; storedOffMeshConCount,offMeshConLinkCount: Integer; hmin,hmax,h: Single;
 i,j: Integer; iv,p: PWord; bmin,bmax: array [0..2] of Single; p0,p1: PSingle; totPolyCount, totVertCount: Integer;
 edgeCount, portalCount: Integer; dir: Word; maxLinkCount, uniqueDetailVertCount, detailTriCount,ndv,nv: Integer;
@@ -436,8 +438,8 @@ begin
     hmin := hmin - params.walkableClimb;
     hmax := hmax + params.walkableClimb;
 
-    dtVcopy(@bmin, @params.bmin);
-    dtVcopy(@bmax, @params.bmax);
+    dtVcopy(@bmin[0], @params.bmin[0]);
+    dtVcopy(@bmax[0], @params.bmax[0]);
     bmin[1] := hmin;
     bmax[1] := hmax;
 
@@ -445,8 +447,8 @@ begin
     begin
       p0 := @params.offMeshConVerts[(i*2+0)*3];
       p1 := @params.offMeshConVerts[(i*2+1)*3];
-      offMeshConClass[i*2+0] := classifyOffMeshPoint(p0, @bmin, @bmax);
-      offMeshConClass[i*2+1] := classifyOffMeshPoint(p1, @bmin, @bmax);
+      offMeshConClass[i*2+0] := classifyOffMeshPoint(p0, @bmin[0], @bmax[0]);
+      offMeshConClass[i*2+1] := classifyOffMeshPoint(p1, @bmin[0], @bmax[0]);
 
       // Zero out off-mesh start positions which are not even potentially touching the mesh.
       if (offMeshConClass[i*2+0] = $ff) then
@@ -571,8 +573,8 @@ begin
   header.polyCount := totPolyCount;
   header.vertCount := totVertCount;
   header.maxLinkCount := maxLinkCount;
-  dtVcopy(@header.bmin, @params.bmin);
-  dtVcopy(@header.bmax, @params.bmax);
+  dtVcopy(@header.bmin[0], @params.bmin[0]);
+  dtVcopy(@header.bmax[0], @params.bmax[0]);
   header.detailMeshCount := params.polyCount;
   header.detailVertCount := uniqueDetailVertCount;
   header.detailTriCount := detailTriCount;

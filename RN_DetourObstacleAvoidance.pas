@@ -162,14 +162,14 @@ function sweepCircleCircle(const c0: PSingle; const r0: Single; const v: PSingle
 const EPS = 0.0001;
 var s: array [0..2] of Single; r,c,a,b,d,rd: Single;
 begin
-	dtVsub(@s,c1,c0);
+	dtVsub(@s[0],c1,c0);
 	r := r0+r1;
-	c := dtVdot2D(@s,@s) - r*r;
+	c := dtVdot2D(@s[0],@s[0]) - r*r;
 	a := dtVdot2D(v,v);
 	if (a < EPS) then Exit(0);	// not moving
 
 	// Overlap, calc time to exit.
-	b := dtVdot2D(v,@s);
+	b := dtVdot2D(v,@s[0]);
 	d := b*b - a*c;
 	if (d < 0.0) then Exit(0); // no intersection.
 	a := 1.0 / a;
@@ -183,14 +183,14 @@ function isectRaySeg(const ap, u, bp, bq: PSingle;
 					   t: PSingle): Integer;
 var v,w: array [0..2] of Single; d,s: Single;
 begin
-	dtVsub(@v,bq,bp);
-	dtVsub(@w,ap,bp);
-	d := dtVperp2D(u,@v);
+	dtVsub(@v[0],bq,bp);
+	dtVsub(@w[0],ap,bp);
+	d := dtVperp2D(u,@v[0]);
 	if (abs(d) < 0.000001) then Exit(0);
 	d := 1.0/d;
-	t^ := dtVperp2D(@v,@w) * d;
+	t^ := dtVperp2D(@v[0],@w[0]) * d;
 	if (t^ < 0) or (t^ > 1) then Exit(0);
-	s := dtVperp2D(u,@w) * d;
+	s := dtVperp2D(u,@w[0]) * d;
 	if (s < 0) or (s > 1) then Exit(0);
 	Result := 1;
 end;
@@ -225,13 +225,13 @@ end;
 
 destructor TdtObstacleAvoidanceDebugData.Destroy;
 begin
-	FreeAndNil(m_vel);
-	FreeAndNil(m_ssize);
-	FreeAndNil(m_pen);
-	FreeAndNil(m_vpen);
-	FreeAndNil(m_vcpen);
-	FreeAndNil(m_spen);
-	FreeAndNil(m_tpen);
+	if m_vel <> nil then FreeMem(m_vel);
+	if m_ssize <> nil then FreeMem(m_ssize);
+	if m_pen <> nil then FreeMem(m_pen);
+	if m_vpen <> nil then FreeMem(m_vpen);
+	if m_vcpen <> nil then FreeMem(m_vcpen);
+	if m_spen <> nil then FreeMem(m_spen);
+	if m_tpen <> nil then FreeMem(m_tpen);
 
   inherited;
 end;
@@ -377,8 +377,8 @@ begin
   Inc(m_ncircles);
 	dtVcopy(@cir.p, pos);
 	cir.rad := rad;
-	dtVcopy(@cir.vel, vel);
-	dtVcopy(@cir.dvel, dvel);
+	dtVcopy(@cir.vel[0], vel);
+	dtVcopy(@cir.dvel[0], dvel);
 end;
 
 procedure TdtObstacleAvoidanceQuery.addSegment(const p, q: PSingle);
@@ -390,7 +390,7 @@ begin
 	seg := @m_segments[m_nsegments];
   Inc(m_nsegments);
 	dtVcopy(@seg.p, p);
-	dtVcopy(@seg.q, q);
+	dtVcopy(@seg.q[0], q);
 end;
 
 procedure TdtObstacleAvoidanceQuery.prepare(const pos, dvel: PSingle);
@@ -406,11 +406,11 @@ begin
 		pb := @cir.p;
 
 		orig[0] := 0; orig[1] := 0; orig[2] := 0;
-		dtVsub(@cir.dp,pb,pa);
-		dtVnormalize(@cir.dp);
-		dtVsub(@dv, @cir.dvel, dvel);
+		dtVsub(@cir.dp[0],pb,pa);
+		dtVnormalize(@cir.dp[0]);
+		dtVsub(@dv[0], @cir.dvel[0], dvel);
 
-		a := dtTriArea2D(@orig, @cir.dp, @dv);
+		a := dtTriArea2D(@orig[0], @cir.dp[0], @dv[0]);
 		if (a < 0.01) then
 		begin
 			cir.np[0] := -cir.dp[2];
@@ -429,7 +429,7 @@ begin
 
 		// Precalc if the agent is really close to the segment.
 		r := 0.01;
-		seg.touch := dtDistancePtSegSqr2D(pos, @seg.p, @seg.q, @t) < Sqr(r);
+		seg.touch := dtDistancePtSegSqr2D(pos, @seg.p[0], @seg.q[0], @t) < Sqr(r);
 	end;
 end;
 
@@ -470,16 +470,16 @@ begin
 		cir := @m_circles[i];
 
 		// RVO
-		dtVscale(@vab, vcand, 2);
-		dtVsub(@vab, @vab, vel);
-		dtVsub(@vab, @vab, @cir.vel);
+		dtVscale(@vab[0], vcand, 2);
+		dtVsub(@vab[0], @vab[0], vel);
+		dtVsub(@vab[0], @vab[0], @cir.vel[0]);
 
 		// Side
-		side := side + dtClamp(dtMin(dtVdot2D(@cir.dp,@vab)*0.5+0.5, dtVdot2D(@cir.np,@vab)*2), 0.0, 1.0);
+		side := side + dtClamp(dtMin(dtVdot2D(@cir.dp[0],@vab[0])*0.5+0.5, dtVdot2D(@cir.np[0],@vab[0])*2), 0.0, 1.0);
 		Inc(nside);
 
 		htmin := 0; htmax := 0;
-		if (sweepCircleCircle(pos,rad, @vab, @cir.p,cir.rad, @htmin, @htmax) = 0) then
+		if (sweepCircleCircle(pos,rad, @vab[0], @cir.p,cir.rad, @htmin, @htmax) = 0) then
 			continue;
 
 		// Handle overlapping obstacles.
@@ -509,18 +509,18 @@ begin
 		if (seg.touch) then
 		begin
 			// Special case when the agent is very close to the segment.
-			dtVsub(@sdir, @seg.q, @seg.p);
+			dtVsub(@sdir[0], @seg.q[0], @seg.p[0]);
 			snorm[0] := -sdir[2];
 			snorm[2] := sdir[0];
 			// If the velocity is pointing towards the segment, no collision.
-			if (dtVdot2D(@snorm, vcand) < 0.0) then
+			if (dtVdot2D(@snorm[0], vcand) < 0.0) then
 				continue;
 			// Else immediate collision.
 			htmin := 0.0;
 		end
 		else
 		begin
-			if (isectRaySeg(pos, vcand, @seg.p, @seg.q, @htmin) = 0) then
+			if (isectRaySeg(pos, vcand, @seg.p[0], @seg.q[0], @htmin) = 0) then
 				continue;
 		end;
 
@@ -588,12 +588,12 @@ begin
 
 			if (Sqr(vcand[0])+Sqr(vcand[2]) > Sqr(vmax+cs/2)) then continue;
 
-			penalty := processSample(@vcand, cs, pos,rad,vel,dvel, minPenalty, debug);
+			penalty := processSample(@vcand[0], cs, pos,rad,vel,dvel, minPenalty, debug);
 			Inc(ns);
 			if (penalty < minPenalty) then
 			begin
 				minPenalty := penalty;
-				dtVcopy(nvel, @vcand);
+				dtVcopy(nvel, @vcand[0]);
 			end;
 		end;
 	end;
@@ -661,9 +661,9 @@ begin
 	sa := sin(da);
 
 	// desired direction
-	dtVcopy(@ddir, dvel);
-	dtNormalize2D(@ddir);
-	dtRorate2D(@ddir[3], @ddir, da*0.5); // rotated by da/2
+	dtVcopy(@ddir[0], dvel);
+	dtNormalize2D(@ddir[0]);
+	dtRorate2D(@ddir[3], @ddir[0], da*0.5); // rotated by da/2
 
 	// Always add sample at zero
 	pat[npat*2+0] := 0;
@@ -707,13 +707,13 @@ begin
 
 	// Start sampling.
 	cr := vmax * (1.0 - m_params.velBias);
-	dtVset(@res, dvel[0] * m_params.velBias, 0, dvel[2] * m_params.velBias);
+	dtVset(@res[0], dvel[0] * m_params.velBias, 0, dvel[2] * m_params.velBias);
 	ns := 0;
 
 	for k := 0 to depth - 1 do
 	begin
 		minPenalty := MaxSingle;
-		dtVset(@bvel, 0,0,0);
+		dtVset(@bvel[0], 0,0,0);
 		
 		for i := 0 to npat - 1 do
 		begin
@@ -723,21 +723,21 @@ begin
 			
 			if (Sqr(vcand[0])+Sqr(vcand[2]) > Sqr(vmax+0.001)) then continue;
 
-			penalty := processSample(@vcand,cr/10, pos,rad,vel,dvel, minPenalty, debug);
+			penalty := processSample(@vcand[0],cr/10, pos,rad,vel,dvel, minPenalty, debug);
 			Inc(ns);
 			if (penalty < minPenalty) then
 			begin
 				minPenalty := penalty;
-				dtVcopy(@bvel, @vcand);
+				dtVcopy(@bvel[0], @vcand[0]);
 			end;
 		end;
 
-		dtVcopy(@res, @bvel);
+		dtVcopy(@res[0], @bvel[0]);
 
 		cr := cr * 0.5;
 	end;
 
-	dtVcopy(nvel, @res);
+	dtVcopy(nvel, @res[0]);
 
 	Result := ns;
 end;

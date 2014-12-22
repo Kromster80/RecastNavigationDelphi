@@ -358,8 +358,8 @@ end;
 procedure TdtPathCorridor.reset(ref: TdtPolyRef; const pos: PSingle);
 begin
 	Assert(m_path <> nil);
-	dtVcopy(@m_pos, pos);
-	dtVcopy(@m_target, pos);
+	dtVcopy(@m_pos[0], pos);
+	dtVcopy(@m_target[0], pos);
 	m_path[0] := ref;
 	m_npath := 1;
 end;
@@ -386,14 +386,14 @@ begin
 	Assert(m_npath <> 0);
 
 	ncorners := 0;
-	navquery.findStraightPath(@m_pos, @m_target, m_path, m_npath,
+	navquery.findStraightPath(@m_pos[0], @m_target[0], m_path, m_npath,
 							   cornerVerts, cornerFlags, cornerPolys, @ncorners, maxCorners);
 	
 	// Prune points in the beginning of the path which are too close.
 	while (ncorners <> 0) do
 	begin
 		if ((cornerFlags[0] and Byte(DT_STRAIGHTPATH_OFFMESH_CONNECTION)) <> 0) or
-			(dtVdist2DSqr(@cornerVerts[0], @m_pos) > Sqr(MIN_TARGET_DIST)) then
+			(dtVdist2DSqr(@cornerVerts[0], @m_pos[0]) > Sqr(MIN_TARGET_DIST)) then
 			break;
 		Dec(ncorners);
 		if (ncorners <> 0) then
@@ -443,8 +443,8 @@ begin
 	Assert(m_path <> nil);
 
 	// Clamp the ray to max distance.
-	dtVcopy(@goal, next);
-	dist := dtVdist2D(@m_pos, @goal);
+	dtVcopy(@goal[0], next);
+	dist := dtVdist2D(@m_pos[0], @goal[0]);
 
 	// If too close to the goal, do not try to optimize.
 	if (dist < 0.01) then
@@ -454,14 +454,14 @@ begin
 	dist := dtMin(dist+0.01, pathOptimizationRange);
 
 	// Adjust ray length.
-	dtVsub(@delta, @goal, @m_pos);
-	dtVmad(@goal, @m_pos, @delta, pathOptimizationRange/dist);
+	dtVsub(@delta[0], @goal[0], @m_pos[0]);
+	dtVmad(@goal[0], @m_pos[0], @delta[0], pathOptimizationRange/dist);
 
 	nres := 0;
-	navquery.raycast(m_path[0], @m_pos, @goal, filter, @t, @norm, @res, @nres, MAX_RES);
+	navquery.raycast(m_path[0], @m_pos[0], @goal[0], filter, @t, @norm[0], @res[0], @nres, MAX_RES);
 	if (nres > 1) and (t > 0.99) then
 	begin
-		m_npath := dtMergeCorridorStartShortcut(m_path, m_npath, m_maxPath, @res, nres);
+		m_npath := dtMergeCorridorStartShortcut(m_path, m_npath, m_maxPath, @res[0], nres);
 	end;
 end;
 
@@ -488,13 +488,13 @@ begin
 		Exit(false);
 
 	nres := 0;
-	navquery.initSlicedFindPath(m_path[0], m_path[m_npath-1], @m_pos, @m_target, filter);
+	navquery.initSlicedFindPath(m_path[0], m_path[m_npath-1], @m_pos[0], @m_target[0], filter);
 	navquery.updateSlicedFindPath(MAX_ITER, nil);
-	status := navquery.finalizeSlicedFindPathPartial(m_path, m_npath, @res, @nres, MAX_RES);
+	status := navquery.finalizeSlicedFindPathPartial(m_path, m_npath, @res[0], @nres, MAX_RES);
 
 	if dtStatusSucceed(status) and (nres > 0) then
 	begin
-		m_npath := dtMergeCorridorStartShortcut(m_path, m_npath, m_maxPath, @res, nres);
+		m_npath := dtMergeCorridorStartShortcut(m_path, m_npath, m_maxPath, @res[0], nres);
 		Exit(true);
 	end;
 
@@ -539,7 +539,7 @@ begin
   status := nav.getOffMeshConnectionPolyEndPoints(refs[0], refs[1], startPos, endPos);
 	if (dtStatusSucceed(status)) then
 	begin
-		dtVcopy(@m_pos, endPos);
+		dtVcopy(@m_pos[0], endPos);
 		Exit(true);
 	end;
 
@@ -571,17 +571,17 @@ begin
 
 	// Move along navmesh and update new position.
 	nvisited := 0;
-	status := navquery.moveAlongSurface(m_path[0], @m_pos, npos, filter,
-												 @reslt, @visited, @nvisited, MAX_VISITED);
+	status := navquery.moveAlongSurface(m_path[0], @m_pos[0], npos, filter,
+												 @reslt[0], @visited[0], @nvisited, MAX_VISITED);
 	if (dtStatusSucceed(status)) then
   begin
-		m_npath := dtMergeCorridorStartMoved(m_path, m_npath, m_maxPath, @visited, nvisited);
+		m_npath := dtMergeCorridorStartMoved(m_path, m_npath, m_maxPath, @visited[0], nvisited);
 
 		// Adjust the position to stay on top of the navmesh.
 		h := m_pos[1];
-		navquery.getPolyHeight(m_path[0], @reslt, @h);
+		navquery.getPolyHeight(m_path[0], @reslt[0], @h);
 		reslt[1] := h;
-		dtVcopy(@m_pos, @reslt);
+		dtVcopy(@m_pos[0], @reslt[0]);
 		Exit(true);
 	end;
 	Result := false;
@@ -609,18 +609,18 @@ begin
 
 	// Move along navmesh and update new position.
 	nvisited := 0;
-	status := navquery.moveAlongSurface(m_path[m_npath-1], @m_target, npos, filter,
-												 @reslt, @visited, @nvisited, MAX_VISITED);
+	status := navquery.moveAlongSurface(m_path[m_npath-1], @m_target[0], npos, filter,
+												 @reslt[0], @visited[0], @nvisited, MAX_VISITED);
 	if (dtStatusSucceed(status)) then
 	begin
-		m_npath := dtMergeCorridorEndMoved(m_path, m_npath, m_maxPath, @visited, nvisited);
+		m_npath := dtMergeCorridorEndMoved(m_path, m_npath, m_maxPath, @visited[0], nvisited);
 		// TODO: should we do that?
 		// Adjust the position to stay on top of the navmesh.
 		(*	float h := m_target[1];
 		 navquery.getPolyHeight(m_path[m_npath-1], reslt, &h);
 		 reslt[1] := h;*)
 
-		dtVcopy(@m_target, @reslt);
+		dtVcopy(@m_target[0], @reslt[0]);
 
 		Exit(true);
 	end;
@@ -639,7 +639,7 @@ begin
 	Assert(npath > 0);
 	Assert(npath < m_maxPath);
 	
-	dtVcopy(@m_target, target);
+	dtVcopy(@m_target[0], target);
 	Move(path^, m_path^, sizeof(TdtPolyRef)*npath);
 	m_npath := npath;
 end;
@@ -648,7 +648,7 @@ function TdtPathCorridor.fixPathStart(safeRef: TdtPolyRef; const safePos: PSingl
 begin
 	Assert(m_path <> nil);
 
-	dtVcopy(@m_pos, safePos);
+	dtVcopy(@m_pos[0], safePos);
 	if (m_npath < 3) and (m_npath > 0) then
 	begin
 		m_path[2] := m_path[m_npath-1];
@@ -688,7 +688,7 @@ begin
 	else if (n = 0) then
 	begin
 		// The first polyref is bad, use current safe values.
-		dtVcopy(@m_pos, safePos);
+		dtVcopy(@m_pos[0], safePos);
 		m_path[0] := safeRef;
 		m_npath := 1;
 	end
@@ -699,8 +699,8 @@ begin
 	end;
 
 	// Clamp target pos to last poly
-	dtVcopy(@tgt, @m_target);
-	navquery.closestPointOnPolyBoundary(m_path[m_npath-1], @tgt, @m_target);
+	dtVcopy(@tgt[0], @m_target[0]);
+	navquery.closestPointOnPolyBoundary(m_path[m_npath-1], @tgt[0], @m_target[0]);
 
 	Result := true;
 end;
@@ -723,8 +723,8 @@ begin
 	Result := true;
 end;
 
-function TdtPathCorridor.getPos(): PSingle; begin Result := @m_pos; end;
-function TdtPathCorridor.getTarget(): PSingle; begin Result := @m_target; end;
+function TdtPathCorridor.getPos(): PSingle; begin Result := @m_pos[0]; end;
+function TdtPathCorridor.getTarget(): PSingle; begin Result := @m_target[0]; end;
 function TdtPathCorridor.getFirstPoly(): TdtPolyRef; begin if m_npath <> 0 then Result := m_path[0] else Result := 0; end;
 function TdtPathCorridor.getLastPoly(): TdtPolyRef; begin if m_npath <> 0 then Result := m_path[m_npath-1] else Result := 0; end;
 function TdtPathCorridor.getPath(): PdtPolyRef; begin Result := m_path; end;

@@ -667,8 +667,8 @@ begin
 
   hf.width := width;
   hf.height := height;
-  rcVcopy(@hf.bmin, bmin);
-  rcVcopy(@hf.bmax, bmax);
+  rcVcopy(@hf.bmin[0], bmin);
+  rcVcopy(@hf.bmax[0], bmax);
   hf.cs := cs;
   hf.ch := ch;
   SetLength(hf.spans, hf.width * hf.height);
@@ -679,9 +679,9 @@ end;
 procedure calcTriNormal(const v0, v1, v2: PSingle; norm: PSingle);
 var e0, e1: array [0..2] of Single;
 begin
-  rcVsub(@e0, v1, v0);
-  rcVsub(@e1, v2, v0);
-  rcVcross(norm, @e0, @e1);
+  rcVsub(@e0[0], v1, v0);
+  rcVsub(@e1[0], v2, v0);
+  rcVcross(norm, @e0[0], @e1[0]);
   rcVnormalize(norm);
 end;
 
@@ -704,7 +704,7 @@ begin
   for i := 0 to nt - 1 do
   begin
     tri := @tris[i*3];
-    calcTriNormal(@verts[tri[0]*3], @verts[tri[1]*3], @verts[tri[2]*3], @norm);
+    calcTriNormal(@verts[tri[0]*3], @verts[tri[1]*3], @verts[tri[2]*3], @norm[0]);
     // Check if the face is walkable.
     if (norm[1] > walkableThr) then
       areas[i] := RC_WALKABLE_AREA;
@@ -793,8 +793,8 @@ begin
   chf.walkableHeight := walkableHeight;
   chf.walkableClimb := walkableClimb;
   chf.maxRegions := 0;
-  rcVcopy(@chf.bmin, @hf.bmin);
-  rcVcopy(@chf.bmax, @hf.bmax);
+  rcVcopy(@chf.bmin[0], @hf.bmin[0]);
+  rcVcopy(@chf.bmax[0], @hf.bmax[0]);
   chf.bmax[1] := chf.bmax[1] + walkableHeight*hf.ch;
   chf.cs := hf.cs;
   chf.ch := hf.ch;
