@@ -152,7 +152,7 @@ function isectSegAABB(const sp, sq, amin, amax: PSingle;
 const EPS = 0.000001;
 var d: array [0..2] of Single; i: Integer; ood,t1,t2: Single;
 begin
-	dtVsub(@d, sq, sp);
+	dtVsub(@d[0], sq, sp);
 	tmin^ := 0;  // set to -FLT_MAX to get first hit on line
 	tmax^ := MaxSingle;		// set to max distance ray can travel (for segment)
 
@@ -187,7 +187,7 @@ end;
 procedure getAgentBounds(const ag: PdtCrowdAgent; bmin, bmax: PSingle);
 var p: PSingle; r, h: Single;
 begin
-	p := @ag.npos;
+	p := @ag.npos[0];
 	r := ag.params.radius;
 	h := ag.params.height;
 	bmin[0] := p[0] - r;
@@ -396,11 +396,11 @@ begin
 		if (not ag.active) then continue;
 
 		trail := @m_trails[i];
-		pos := @ag.npos;
+		pos := @ag.npos[0];
 
 		dd.&begin(DU_DRAW_LINES,3.0);
 		preva := 1;
-		dtVcopy(@prev, pos);
+		dtVcopy(@prev[0], pos);
 		for j := 0 to AGENT_MAX_TRAIL-1 - 1 do
 		begin
 			idx := (trail.htrail + AGENT_MAX_TRAIL-j) mod AGENT_MAX_TRAIL;
@@ -409,7 +409,7 @@ begin
 			dd.vertex(prev[0],prev[1]+0.1,prev[2], duRGBA(0,0,0,Trunc(128*preva)));
 			dd.vertex(v[0],v[1]+0.1,v[2], duRGBA(0,0,0,Trunc(128*a)));
 			preva := a;
-			dtVcopy(@prev, v);
+			dtVcopy(@prev[0], v);
 		end;
 		dd.&end();
 
@@ -425,7 +425,7 @@ begin
 			continue;
 
 		radius := ag.params.radius;
-		pos := @ag.npos;
+		pos := @ag.npos[0];
 		
 		if (m_toolParams.m_showCorners) then
 		begin
@@ -530,7 +530,7 @@ begin
 		if (not ag.active) then continue;
 
 		radius := ag.params.radius;
-		pos := @ag.npos;
+		pos := @ag.npos[0];
 
 		col := duRGBA(0,0,0,32);
 		if (m_agentDebug.idx = i) then
@@ -546,7 +546,7 @@ begin
 
 		height := ag.params.height;
 		radius := ag.params.radius;
-		pos := @ag.npos;
+		pos := @ag.npos[0];
 		
 		col := duRGBA(220,220,220,128);
 		if (ag.targetState = DT_CROWDAGENT_TARGET_REQUESTING) or (ag.targetState = DT_CROWDAGENT_TARGET_WAITING_FOR_QUEUE) then
@@ -608,9 +608,9 @@ begin
 
 		radius := ag.params.radius;
 		height := ag.params.height;
-		pos := @ag.npos;
-		vel := @ag.vel;
-		dvel := @ag.dvel;
+		pos := @ag.npos[0];
+		vel := @ag.vel[0];
+		dvel := @ag.dvel[0];
 		
 		col := duRGBA(220,220,220,192);
 		if (ag.targetState = DT_CROWDAGENT_TARGET_REQUESTING) or (ag.targetState = DT_CROWDAGENT_TARGET_WAITING_FOR_QUEUE) then
@@ -789,7 +789,7 @@ begin
 	if (idx <> -1) then
 	begin
 		if (m_targetRef <> 0) then
-			crowd.requestMoveTarget(idx, m_targetRef, @m_targetPos);
+			crowd.requestMoveTarget(idx, m_targetRef, @m_targetPos[0]);
 
 		// Init trail
 		trail := @m_trails[idx];
@@ -844,8 +844,8 @@ begin
 			ag := crowd.getAgent(m_agentDebug.idx);
 			if (ag <> nil) and ag.active then
 			begin
-				calcVel(@vel, @ag.npos, p, ag.params.maxSpeed);
-				crowd.requestMoveVelocity(m_agentDebug.idx, @vel);
+				calcVel(@vel[0], @ag.npos[0], p, ag.params.maxSpeed);
+				crowd.requestMoveVelocity(m_agentDebug.idx, @vel[0]);
 			end;
 		end
 		else
@@ -854,20 +854,20 @@ begin
 			begin
 				ag := crowd.getAgent(i);
 				if (not ag.active) then continue;
-				calcVel(@vel, @ag.npos, p, ag.params.maxSpeed);
-				crowd.requestMoveVelocity(i, @vel);
+				calcVel(@vel[0], @ag.npos[0], p, ag.params.maxSpeed);
+				crowd.requestMoveVelocity(i, @vel[0]);
 			end;
 		end;
 	end
 	else
 	begin
-		navquery.findNearestPoly(p, ext, filter, @m_targetRef, @m_targetPos);
+		navquery.findNearestPoly(p, ext, filter, @m_targetRef, @m_targetPos[0]);
 		
 		if (m_agentDebug.idx <> -1) then
 		begin
 			ag := crowd.getAgent(m_agentDebug.idx);
 			if (ag <> nil) and ag.active then
-				crowd.requestMoveTarget(m_agentDebug.idx, m_targetRef, @m_targetPos);
+				crowd.requestMoveTarget(m_agentDebug.idx, m_targetRef, @m_targetPos[0]);
 		end
 		else
 		begin
@@ -875,7 +875,7 @@ begin
 			begin
 				ag := crowd.getAgent(i);
 				if (not ag.active) then continue;
-				crowd.requestMoveTarget(i, m_targetRef, @m_targetPos);
+				crowd.requestMoveTarget(i, m_targetRef, @m_targetPos[0]);
 			end;
 		end;
 	end;
@@ -894,9 +894,9 @@ begin
 	begin
 		ag := crowd.getAgent(i);
 		if (not ag.active) then continue;
-		getAgentBounds(ag, @bmin, @bmax);
+		getAgentBounds(ag, @bmin[0], @bmax[0]);
 
-		if (isectSegAABB(s, p, @bmin,@bmax, @tmin, @tmax)) then
+		if (isectSegAABB(s, p, @bmin[0],@bmax[0], @tmin, @tmax)) then
 		begin
 			if (tmin > 0) and (tmin < tsel) then
 			begin
@@ -925,8 +925,6 @@ begin
 		updateFlags := updateFlags or DT_CROWD_OPTIMIZE_VIS;
 	if (m_toolParams.m_optimizeTopo) then
 		updateFlags := updateFlags or DT_CROWD_OPTIMIZE_TOPO;
-	if (m_toolParams.m_obstacleAvoidance) then
-		updateFlags := updateFlags or DT_CROWD_OBSTACLE_AVOIDANCE;
 	if (m_toolParams.m_obstacleAvoidance) then
 		updateFlags := updateFlags or DT_CROWD_OBSTACLE_AVOIDANCE;
 	if (m_toolParams.m_separation) then
@@ -969,7 +967,7 @@ begin
 			continue;
 		// Update agent movement trail.
 		trail.htrail := (trail.htrail + 1) mod AGENT_MAX_TRAIL;
-		dtVcopy(@trail.trail[trail.htrail*3], @ag.npos);
+		dtVcopy(@trail.trail[trail.htrail*3], @ag.npos[0]);
 	end;
 
 	m_agentDebug.vod.normalizeSamples();
@@ -983,7 +981,7 @@ function TCrowdToolState.getToolParams: PCrowdToolParams; begin Result := @m_too
 
 
 
-constructor TCrowdTool.Create;
+constructor TCrowdTool.Create(aOwner: TWinControl);
 begin
   inherited Create;
 	m_sample := nil;
@@ -1004,6 +1002,8 @@ end;
 destructor TCrowdTool.Destroy;
 begin
   fFrame.Free;
+  m_state.Free;
+
   inherited;
 end;
 
@@ -1190,7 +1190,7 @@ begin
 		begin
       filter := TdtQueryFilter.Create; // Delphi: Assume c++ creates a dummy here
 			ext := crowd.getQueryExtents();
-			navquery.findNearestPoly(p, ext, filter, @ref, @tgt);
+			navquery.findNearestPoly(p, ext, filter, @ref, @tgt[0]);
 			if (ref <> 0) then
 			begin
 				flags := 0;
