@@ -127,12 +127,12 @@ begin
 
   fExeDir := ExtractFilePath(Application.ExeName) + '..\..\';
 
-  fDist := 150;
-  fRotateY := 45;
+  fDist := 50;
+  fRotateY := -5;
 
   InitGL;
 
-  fRotateX := 20;
+  fRotateX := 0;
 
   Button1Click(nil);
 
@@ -181,14 +181,14 @@ var hitt: Single; hit: Boolean; pos: array [0..2] of Single;
 begin
   if (fGeom <> nil) and (fSample <> nil) then
   begin
-    hit := fGeom.raycastMesh(@fRayS, @fRayE, @hitt);
+    hit := fGeom.raycastMesh(@fRayS[0], @fRayE[0], @hitt);
 
     if (hit) then
     begin
       pos[0] := fRayS[0] + (fRayE[0] - fRayS[0])*hitt;
       pos[1] := fRayS[1] + (fRayE[1] - fRayS[1])*hitt;
       pos[2] := fRayS[2] + (fRayE[2] - fRayS[2])*hitt;
-      fSample.handleClick(@fRayS, @pos, Button = mbRight);
+      fSample.handleClick(@fRayS[0], @pos[0], Button = mbRight);
     end;
   end;
 
@@ -215,9 +215,9 @@ begin
   end;
 
   // Get hit ray position and direction.
-  glGetDoublev(GL_PROJECTION_MATRIX, @proj);
-  glGetDoublev(GL_MODELVIEW_MATRIX, @model);
-  glGetIntegerv(GL_VIEWPORT, @view);
+  glGetDoublev(GL_PROJECTION_MATRIX, @proj[0,0]);
+  glGetDoublev(GL_MODELVIEW_MATRIX, @model[0,0]);
+  glGetIntegerv(GL_VIEWPORT, @view[0]);
   gluUnProject(X, Panel3.Height - Y, 0.0, model, proj, view, @dx, @dy, @dz);
   fRayS[0] := dx; fRayS[1] := dy; fRayS[2] := dz;
   gluUnProject(X, Panel3.Height - Y, 1.0, model, proj, view, @dx, @dy, @dz);
@@ -321,7 +321,7 @@ end;
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
   Caption := 'Pathfinding Recast/Detour/Crowd ' + Format('%.1f', [1000 / fFrameTime]);
-  fSample.handleUpdate(0.5);
+  fSample.handleUpdate(0.05);
 end;
 
 

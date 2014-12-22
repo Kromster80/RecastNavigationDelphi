@@ -402,7 +402,7 @@ object Form1: TForm1
     TabOrder = 6
   end
   object Timer1: TTimer
-    Interval = 200
+    Interval = 50
     OnTimer = Timer1Timer
     Left = 392
     Top = 40
