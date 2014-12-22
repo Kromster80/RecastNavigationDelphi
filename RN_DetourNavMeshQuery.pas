@@ -747,15 +747,15 @@ begin
   rs := Random();
   rt := Random();
 
-  dtRandomPointInConvexPoly(@verts, poly.vertCount, @areas, rs, rt, @pt);
+  dtRandomPointInConvexPoly(@verts[0], poly.vertCount, @areas[0], rs, rt, @pt[0]);
 
   h := 0.0;
-  status := getPolyHeight(polyRef, @pt, @h);
+  status := getPolyHeight(polyRef, @pt[0], @h);
   if (dtStatusFailed(status)) then
     Exit(status);
   pt[1] := h;
 
-  dtVcopy(randomPt, @pt);
+  dtVcopy(randomPt, @pt[0]);
   randomRef^ := polyRef;
 
   Result := DT_SUCCESS;
@@ -875,14 +875,14 @@ begin
       end;
 
       // Find edge and calc distance to the edge.
-      if (getPortalPoints(bestRef, bestPoly, bestTile, neighbourRef, neighbourPoly, neighbourTile, @va3, @vb3) = 0) then
+      if (getPortalPoints(bestRef, bestPoly, bestTile, neighbourRef, neighbourPoly, neighbourTile, @va3[0], @vb3[0]) = 0) then
       begin
         i := bestTile.links[i].next;
         continue;
       end;
 
       // If the circle is not touching the next polygon, skip it.
-      distSqr := dtDistancePtSegSqr2D(centerPos, @va3, @vb3, @tseg);
+      distSqr := dtDistancePtSegSqr2D(centerPos, @va3[0], @vb3[0], @tseg);
       if (distSqr > radiusSqr) then
       begin
         i := bestTile.links[i].next;
@@ -905,7 +905,7 @@ begin
 
       // Cost
       if (neighbourNode.flags = 0) then
-        dtVlerp(@neighbourNode.pos, @va3, @vb3, 0.5);
+        dtVlerp(@neighbourNode.pos, @va3[0], @vb3[0], 0.5);
 
       total := bestNode.total + dtVdist(@bestNode.pos, @neighbourNode.pos);
 
@@ -950,15 +950,15 @@ begin
   s := Random;
   t := Random;
 
-  dtRandomPointInConvexPoly(@verts, randomPoly.vertCount, @areas, s, t, @pt);
+  dtRandomPointInConvexPoly(@verts[0], randomPoly.vertCount, @areas[0], s, t, @pt[0]);
 
   h := 0.0;
-  stat := getPolyHeight(randomPolyRef, @pt, @h);
+  stat := getPolyHeight(randomPolyRef, @pt[0], @h);
   if (dtStatusFailed(status)) then
     Exit(stat);
   pt[1] := h;
 
-  dtVcopy(randomPt, @pt);
+  dtVcopy(randomPt, @pt[0]);
   randomRef^ := randomPolyRef;
 
   Result := DT_SUCCESS;
@@ -1012,7 +1012,7 @@ begin
     dtVcopy(@verts[i*3], @tile.verts[poly.verts[i]*3]);
 
   dtVcopy(closest, pos);
-  if (not dtDistancePtPolyEdgesSqr(pos, @verts, nv, @edged, @edget)) then
+  if (not dtDistancePtPolyEdgesSqr(pos, @verts[0], nv, @edged[0], @edget[0])) then
   begin
     // Point is outside the polygon, dtClamp to nearest edge.
     dmin := MaxSingle;
@@ -1190,7 +1190,7 @@ begin
 
   // Get nearby polygons from proximity grid.
   polyCount := 0;
-  if (dtStatusFailed(queryPolygons(center, extents, filter, @polys, @polyCount, 128))) then
+  if (dtStatusFailed(queryPolygons(center, extents, filter, @polys[0], @polyCount, 128))) then
     Exit(DT_FAILURE or DT_INVALID_PARAM);
 
   // Find nearest polygon amongst the nearby polygons.
@@ -1201,11 +1201,11 @@ begin
     ref := polys[i];
     posOverPoly := false;
     d := 0;
-    closestPointOnPoly(ref, center, @closestPtPoly, @posOverPoly);
+    closestPointOnPoly(ref, center, @closestPtPoly[0], @posOverPoly);
 
     // If a point is directly over a polygon and closer than
     // climb height, favor that instead of straight line nearest point.
-    dtVsub(@diff, center, @closestPtPoly);
+    dtVsub(@diff[0], center, @closestPtPoly[0]);
     if (posOverPoly) then
     begin
       tile := nil;
@@ -1216,13 +1216,13 @@ begin
     end
     else
     begin
-      d := dtVlenSqr(@diff);
+      d := dtVlenSqr(@diff[0]);
     end;
 
     if (d < nearestDistanceSqr) then
     begin
       if (nearestPt <> nil) then
-        dtVcopy(nearestPt, @closestPtPoly);
+        dtVcopy(nearestPt, @closestPtPoly[0]);
       nearestDistanceSqr := d;
       nearest := ref;
     end;
@@ -1236,7 +1236,7 @@ end;
 
 function TdtNavMeshQuery.queryPolygonsInTile(tile: PdtMeshTile; qmin, qmax: PSingle; filter: TdtQueryFilter;
               polys: PdtPolyRef; maxPolys: Integer): Integer;
-var node: PdtBVNode; &end: PdtBVNode; tbmin,tbmax: PSingle; qfac: Single; bmin,bmax: array [0..2] of Word;
+var node: PdtBVNode; &end: PdtBVNode; tbmin,tbmax: PSingle; qfac: Single; bmin,bmax: array [0..2] of Word; bminf,bmaxf: array [0..2] of Single;
 minx,miny,minz,maxx,maxy,maxz: Single; base,ref: TdtPolyRef; i,j,n,escapeIndex: Integer; overlap,isLeafNode: Boolean; p: PdtPoly;
 v: PSingle;
 begin
@@ -1246,8 +1246,8 @@ begin
   begin
     node := @tile.bvTree[0];
     &end := @tile.bvTree[tile.header.bvNodeCount];
-    tbmin := @tile.header.bmin;
-    tbmax := @tile.header.bmax;
+    tbmin := @tile.header.bmin[0];
+    tbmax := @tile.header.bmax[0];
     qfac := tile.header.bvQuantFactor;
 
     // Calculate quantized box
@@ -1271,7 +1271,7 @@ begin
     n := 0;
     while (node < &end) do
     begin
-      overlap := dtOverlapQuantBounds(@bmin, @bmax, @node.bmin, @node.bmax);
+      overlap := dtOverlapQuantBounds(@bmin[0], @bmax[0], @node.bmin, @node.bmax[0]);
       isLeafNode := node.i >= 0;
 
       if (isLeafNode and overlap) then
@@ -1314,15 +1314,15 @@ begin
         continue;
       // Calc polygon bounds.
       v := @tile.verts[p.verts[0]*3];
-      dtVcopy(@bmin, v);
-      dtVcopy(@bmax, v);
+      dtVcopy(@bminf[0], v);
+      dtVcopy(@bmaxf[0], v);
       for j := 1 to p.vertCount - 1 do
       begin
         v := @tile.verts[p.verts[j]*3];
-        dtVmin(@bmin, v);
-        dtVmax(@bmax, v);
+        dtVmin(@bminf[0], v);
+        dtVmax(@bmaxf[0], v);
       end;
-      if (dtOverlapBounds(qmin,qmax, @bmin,@bmax)) then
+      if (dtOverlapBounds(qmin,qmax, @bminf[0],@bmaxf[0])) then
       begin
         if (n < maxPolys) then
         begin
@@ -1350,22 +1350,22 @@ var bmin,bmax: array [0..2] of Single; minx, miny, maxx, maxy: Integer; neis: ar
 begin
   //dtAssert(m_nav);
 
-  dtVsub(@bmin, center, extents);
-  dtVadd(@bmax, center, extents);
+  dtVsub(@bmin[0], center, extents);
+  dtVadd(@bmax[0], center, extents);
 
   // Find tiles the query touches.
-  m_nav.calcTileLoc(@bmin, @minx, @miny);
-  m_nav.calcTileLoc(@bmax, @maxx, @maxy);
+  m_nav.calcTileLoc(@bmin[0], @minx, @miny);
+  m_nav.calcTileLoc(@bmax[0], @maxx, @maxy);
 
   n := 0;
   for y := miny to maxy do
   begin
     for x := minx to maxx do
     begin
-      nneis := m_nav.getTilesAt(x,y,@neis,MAX_NEIS);
+      nneis := m_nav.getTilesAt(x,y,@neis[0],MAX_NEIS);
       for j := 0 to nneis - 1 do
       begin
-        Inc(n, queryPolygonsInTile(neis[j], @bmin, @bmax, filter, polys+n, maxPolys-n));
+        Inc(n, queryPolygonsInTile(neis[j], @bmin[0], @bmax[0], filter, polys+n, maxPolys-n));
         if (n >= maxPolys) then
         begin
           polyCount^ := n;
@@ -1528,7 +1528,7 @@ begin
                             parentRef, parentTile, parentPoly,
                             bestRef, bestTile, bestPoly,
                             neighbourRef, neighbourTile, neighbourPoly);
-        endCost := filter.getCost(@neighbourNode.pos, @endPos,
+        endCost := filter.getCost(@neighbourNode.pos, endPos,
                             bestRef, bestTile, bestPoly,
                             neighbourRef, neighbourTile, neighbourPoly,
                             0, nil, nil);
@@ -1646,8 +1646,8 @@ begin
   m_query.status := DT_FAILURE;
   m_query.startRef := startRef;
   m_query.endRef := endRef;
-  dtVcopy(@m_query.startPos, startPos);
-  dtVcopy(@m_query.endPos, endPos);
+  dtVcopy(@m_query.startPos[0], startPos);
+  dtVcopy(@m_query.endPos[0], endPos);
   m_query.filter := filter;
   m_query.options := options;
   m_query.raycastLimitSqr := MaxSingle;
@@ -1859,7 +1859,7 @@ begin
       // Special case for last node.
       if (neighbourRef = m_query.endRef) then
       begin
-        endCost := m_query.filter.getCost(@neighbourNode.pos, @m_query.endPos,
+        endCost := m_query.filter.getCost(@neighbourNode.pos, @m_query.endPos[0],
                                 bestRef, bestTile, bestPoly,
                                 neighbourRef, neighbourTile, neighbourPoly,
                                 0, nil, nil);
@@ -1869,7 +1869,7 @@ begin
       end
       else
       begin
-        heuristic := dtVdist(@neighbourNode.pos, @m_query.endPos)*H_SCALE;
+        heuristic := dtVdist(@neighbourNode.pos, @m_query.endPos[0])*H_SCALE;
       end;
 
       total := cost + heuristic;
@@ -1980,7 +1980,7 @@ begin
       status := 0;
       if (node.flags and DT_NODE_PARENT_DETACHED) <> 0 then
       begin
-        status := raycast(node.id, @node.pos, @next.pos, m_query.filter, @t, @normal, path+n, @m, maxPath-n);
+        status := raycast(node.id, @node.pos, @next.pos, m_query.filter, @t, @normal[0], path+n, @m, maxPath-n);
         Inc(n, m);
         // raycast ends on poly boundary and the path might include the next poly boundary.
         if (path[n-1] = next.id) then
@@ -2078,7 +2078,7 @@ begin
       status := 0;
       if (node.flags and DT_NODE_PARENT_DETACHED) <> 0 then
       begin
-        status := raycast(node.id, @node.pos, @next.pos, m_query.filter, @t, @normal, path+n, @m, maxPath-n);
+        status := raycast(node.id, @node.pos[0], @next.pos[0], m_query.filter, @t, @normal[0], path+n, @m, maxPath-n);
         Inc(n, m);
         // raycast ends on poly boundary and the path might include the next poly boundary.
         if (path[n-1] = next.id) then
@@ -2166,7 +2166,7 @@ begin
     if (dtStatusFailed(m_nav.getTileAndPolyByRef(&to, @toTile, @toPoly))) then
       Exit(DT_FAILURE or DT_INVALID_PARAM);
 
-    if (dtStatusFailed(getPortalPoints(from, fromPoly, fromTile, &to, toPoly, toTile, @left, @right))) then
+    if (dtStatusFailed(getPortalPoints(from, fromPoly, fromTile, &to, toPoly, toTile, @left[0], @right[0]))) then
       break;
 
     if (options and Byte(DT_STRAIGHTPATH_AREA_CROSSINGS)) <> 0 then
@@ -2177,11 +2177,11 @@ begin
     end;
 
     // Append intersection
-    if (dtIntersectSegSeg2D(startPos, endPos, @left, @right, @s, @t)) then
+    if (dtIntersectSegSeg2D(startPos, endPos, @left[0], @right[0], @s, @t)) then
     begin
-      dtVlerp(@pt, @left,@right, t);
+      dtVlerp(@pt[0], @left[0],@right[0], t);
 
-      stat := appendVertex(@pt, 0, path[i+1],
+      stat := appendVertex(@pt[0], 0, path[i+1],
                 straightPath, straightPathFlags, straightPathRefs,
                 straightPathCount, maxStraightPath);
       if (stat <> DT_IN_PROGRESS) then
@@ -2236,7 +2236,7 @@ begin
     Exit(DT_FAILURE or DT_INVALID_PARAM);
 
   // Add start point.
-  stat := appendVertex(@closestStartPos, Byte(DT_STRAIGHTPATH_START), path[0],
+  stat := appendVertex(@closestStartPos[0], Byte(DT_STRAIGHTPATH_START), path[0],
             straightPath, straightPathFlags, straightPathRefs,
             straightPathCount, maxStraightPath);
   if (stat <> DT_IN_PROGRESS) then
@@ -2244,9 +2244,9 @@ begin
 
   if (pathSize > 1) then
   begin
-    dtVcopy(@portalApex, @closestStartPos);
-    dtVcopy(@portalLeft, @portalApex);
-    dtVcopy(@portalRight, @portalApex);
+    dtVcopy(@portalApex[0], @closestStartPos[0]);
+    dtVcopy(@portalLeft[0], @portalApex[0]);
+    dtVcopy(@portalRight[0], @portalApex[0]);
     apexIndex := 0;
     leftIndex := 0;
     rightIndex := 0;
@@ -2263,12 +2263,12 @@ begin
       if (i+1 < pathSize) then
       begin
         // Next portal.
-        if (dtStatusFailed(getPortalPoints(path[i], path[i+1], @left, @right, @fromType, @toType))) then
+        if (dtStatusFailed(getPortalPoints(path[i], path[i+1], @left[0], @right[0], @fromType, @toType))) then
         begin
           // Failed to get portal points, in practice this means that path[i+1] is invalid polygon.
           // Clamp the end point to path[i], and return the path so far.
 
-          if (dtStatusFailed(closestPointOnPolyBoundary(path[i], endPos, @closestEndPos))) then
+          if (dtStatusFailed(closestPointOnPolyBoundary(path[i], endPos, @closestEndPos[0]))) then
           begin
             // This should only happen when the first polygon is invalid.
             Exit(DT_FAILURE or DT_INVALID_PARAM);
@@ -2277,12 +2277,12 @@ begin
           // Apeend portals along the current straight path segment.
           if (options and (Byte(DT_STRAIGHTPATH_AREA_CROSSINGS) or Byte(DT_STRAIGHTPATH_ALL_CROSSINGS)) <> 0) then
           begin
-            stat := appendPortals(apexIndex, i, @closestEndPos, path,
+            stat := appendPortals(apexIndex, i, @closestEndPos[0], path,
                        straightPath, straightPathFlags, straightPathRefs,
                        straightPathCount, maxStraightPath, options);
           end;
 
-          stat := appendVertex(@closestEndPos, 0, path[i],
+          stat := appendVertex(@closestEndPos[0], 0, path[i],
                     straightPath, straightPathFlags, straightPathRefs,
                     straightPathCount, maxStraightPath);
 
@@ -2292,7 +2292,7 @@ begin
         // If starting really close the portal, advance.
         if (i = 0) then
         begin
-          if (dtDistancePtSegSqr2D(@portalApex, @left, @right, @t) < Sqr(0.001)) then
+          if (dtDistancePtSegSqr2D(@portalApex[0], @left[0], @right[0], @t) < Sqr(0.001)) then
           begin
             Inc(i);
             continue;
@@ -2302,18 +2302,18 @@ begin
       else
       begin
         // End of the path.
-        dtVcopy(@left, @closestEndPos);
-        dtVcopy(@right, @closestEndPos);
+        dtVcopy(@left[0], @closestEndPos[0]);
+        dtVcopy(@right[0], @closestEndPos[0]);
 
         fromType := DT_POLYTYPE_GROUND; toType := DT_POLYTYPE_GROUND;
       end;
 
       // Right vertex.
-      if (dtTriArea2D(@portalApex, @portalRight, @right) <= 0.0) then
+      if (dtTriArea2D(@portalApex[0], @portalRight[0], @right[0]) <= 0.0) then
       begin
-        if (dtVequal(@portalApex, @portalRight) or (dtTriArea2D(@portalApex, @portalLeft, @right) > 0.0)) then
+        if (dtVequal(@portalApex[0], @portalRight[0]) or (dtTriArea2D(@portalApex[0], @portalLeft[0], @right[0]) > 0.0)) then
         begin
-          dtVcopy(@portalRight, @right);
+          dtVcopy(@portalRight[0], @right[0]);
           if (i+1 < pathSize) then rightPolyRef := path[i+1] else rightPolyRef := 0;
           rightPolyType := toType;
           rightIndex := i;
@@ -2323,14 +2323,14 @@ begin
           // Append portals along the current straight path segment.
           if (options and (Byte(DT_STRAIGHTPATH_AREA_CROSSINGS) or Byte(DT_STRAIGHTPATH_ALL_CROSSINGS)) <> 0) then
           begin
-            stat := appendPortals(apexIndex, leftIndex, @portalLeft, path,
+            stat := appendPortals(apexIndex, leftIndex, @portalLeft[0], path,
                        straightPath, straightPathFlags, straightPathRefs,
                        straightPathCount, maxStraightPath, options);
             if (stat <> DT_IN_PROGRESS) then
               Exit(stat);
           end;
 
-          dtVcopy(@portalApex, @portalLeft);
+          dtVcopy(@portalApex[0], @portalLeft[0]);
           apexIndex := leftIndex;
 
           flags := 0;
@@ -2341,14 +2341,14 @@ begin
           ref := leftPolyRef;
 
           // Append or update vertex
-          stat := appendVertex(@portalApex, flags, ref,
+          stat := appendVertex(@portalApex[0], flags, ref,
                     straightPath, straightPathFlags, straightPathRefs,
                     straightPathCount, maxStraightPath);
           if (stat <> DT_IN_PROGRESS) then
             Exit(stat);
 
-          dtVcopy(@portalLeft, @portalApex);
-          dtVcopy(@portalRight, @portalApex);
+          dtVcopy(@portalLeft[0], @portalApex[0]);
+          dtVcopy(@portalRight[0], @portalApex[0]);
           leftIndex := apexIndex;
           rightIndex := apexIndex;
 
@@ -2361,11 +2361,11 @@ begin
       end;
 
       // Left vertex.
-      if (dtTriArea2D(@portalApex, @portalLeft, @left) >= 0.0) then
+      if (dtTriArea2D(@portalApex[0], @portalLeft[0], @left[0]) >= 0.0) then
       begin
-        if (dtVequal(@portalApex, @portalLeft)) or (dtTriArea2D(@portalApex, @portalRight, @left) < 0.0) then
+        if (dtVequal(@portalApex[0], @portalLeft[0])) or (dtTriArea2D(@portalApex[0], @portalRight[0], @left[0]) < 0.0) then
         begin
-          dtVcopy(@portalLeft, @left);
+          dtVcopy(@portalLeft[0], @left[0]);
           if (i+1 < pathSize) then leftPolyRef := path[i+1] else leftPolyRef := 0;
           leftPolyType := toType;
           leftIndex := i;
@@ -2375,14 +2375,14 @@ begin
           // Append portals along the current straight path segment.
           if (options and (Byte(DT_STRAIGHTPATH_AREA_CROSSINGS) or Byte(DT_STRAIGHTPATH_ALL_CROSSINGS)) <> 0) then
           begin
-            stat := appendPortals(apexIndex, rightIndex, @portalRight, path,
+            stat := appendPortals(apexIndex, rightIndex, @portalRight[0], path,
                        straightPath, straightPathFlags, straightPathRefs,
                        straightPathCount, maxStraightPath, options);
             if (stat <> DT_IN_PROGRESS) then
               Exit(stat);
           end;
 
-          dtVcopy(@portalApex, @portalRight);
+          dtVcopy(@portalApex[0], @portalRight[0]);
           apexIndex := rightIndex;
 
           flags := 0;
@@ -2393,14 +2393,14 @@ begin
           ref := rightPolyRef;
 
           // Append or update vertex
-          stat := appendVertex(@portalApex, flags, ref,
+          stat := appendVertex(@portalApex[0], flags, ref,
                     straightPath, straightPathFlags, straightPathRefs,
                     straightPathCount, maxStraightPath);
           if (stat <> DT_IN_PROGRESS) then
             Exit(stat);
 
-          dtVcopy(@portalLeft, @portalApex);
-          dtVcopy(@portalRight, @portalApex);
+          dtVcopy(@portalLeft[0], @portalApex[0]);
+          dtVcopy(@portalRight[0], @portalApex[0]);
           leftIndex := apexIndex;
           rightIndex := apexIndex;
 
@@ -2418,7 +2418,7 @@ begin
     // Append portals along the current straight path segment.
     if (options and (Byte(DT_STRAIGHTPATH_AREA_CROSSINGS) or Byte(DT_STRAIGHTPATH_ALL_CROSSINGS)) <> 0) then
     begin
-      stat := appendPortals(apexIndex, pathSize-1, @closestEndPos, path,
+      stat := appendPortals(apexIndex, pathSize-1, @closestEndPos[0], path,
                  straightPath, straightPathFlags, straightPathRefs,
                  straightPathCount, maxStraightPath, options);
       if (stat <> DT_IN_PROGRESS) then
@@ -2426,7 +2426,7 @@ begin
     end;
   end;
 
-  stat := appendVertex(@closestEndPos, Byte(DT_STRAIGHTPATH_END), 0,
+  stat := appendVertex(@closestEndPos[0], Byte(DT_STRAIGHTPATH_END), 0,
             straightPath, straightPathFlags, straightPathRefs,
             straightPathCount, maxStraightPath);
 
@@ -2459,7 +2459,7 @@ function TdtNavMeshQuery.moveAlongSurface(startRef: TdtPolyRef; startPos, endPos
 const MAX_STACK = 48;
 const MAX_NEIS = 8;
 var status: TdtStatus; stack: array [0..MAX_STACK-1] of PdtNode; nstack,i,j,nverts: Integer; startNode,bestNode,curNode: PdtNode;
-bestPos,searchPos: array [0..2] of Single; bestDist,searchRadSqr: Single; verts: array [0..DT_VERTS_PER_POLYGON*3-1] of PdtNode;
+bestPos,searchPos: array [0..2] of Single; bestDist,searchRadSqr: Single; verts: array [0..DT_VERTS_PER_POLYGON*3-1] of Single;
 curRef: TdtPolyRef; curTile,neiTile: PdtMeshTile; curPoly,neiPoly: PdtPoly; nneis: Integer; neis: array [0..MAX_NEIS-1] of TdtPolyRef; k: Cardinal;
 link: PdtLink; idx: Cardinal; ref: TdtPolyRef; vj,vi: PSingle; tseg,distSqr: Single; neighbourNode: PdtNode; n: Integer;
 prev,node,next: PdtNode;
@@ -2492,10 +2492,10 @@ begin
 
   bestDist := MaxSingle;
   bestNode := nil;
-  dtVcopy(@bestPos, startPos);
+  dtVcopy(@bestPos[0], startPos);
 
   // Search constraints  F
-  dtVlerp(@searchPos, startPos, endPos, 0.5);
+  dtVlerp(@searchPos[0], startPos, endPos, 0.5);
   searchRadSqr := Sqr(dtVdist(startPos, endPos)/2.0 + 0.001);
 
   while (nstack <> 0) do
@@ -2519,10 +2519,10 @@ begin
       dtVcopy(@verts[i*3], @curTile.verts[curPoly.verts[i]*3]);
 
     // If target is inside the poly, stop search.
-    if (dtPointInPolygon(endPos, @verts, nverts)) then
+    if (dtPointInPolygon(endPos, @verts[0], nverts)) then
     begin
       bestNode := curNode;
-      dtVcopy(@bestPos, endPos);
+      dtVcopy(@bestPos[0], endPos);
       break;
     end;
 
@@ -2581,7 +2581,7 @@ begin
         if (distSqr < bestDist) then
         begin
                     // Update nearest distance.
-          dtVlerp(@bestPos, vj,vi, tseg);
+          dtVlerp(@bestPos[0], vj,vi, tseg);
           bestDist := distSqr;
           bestNode := curNode;
         end;
@@ -2602,7 +2602,7 @@ begin
           // TODO: Maybe should use getPortalPoints(), but this one is way faster.
           vj := @verts[j*3];
           vi := @verts[i*3];
-          distSqr := dtDistancePtSegSqr2D(@searchPos, vj, vi, @tseg);
+          distSqr := dtDistancePtSegSqr2D(@searchPos[0], vj, vi, @tseg);
           if (distSqr > searchRadSqr) then
             continue;
 
@@ -2649,7 +2649,7 @@ begin
     until (node = nil);
   end;
 
-  dtVcopy(resultPos, @bestPos);
+  dtVcopy(resultPos, @bestPos[0]);
 
   visitedCount^ := n;
 
@@ -2766,7 +2766,7 @@ end;
 function TdtNavMeshQuery.getEdgeMidPoint(from, &to: TdtPolyRef; mid: PSingle): TdtStatus;
 var left, right: array [0..2] of Single; fromType, toType: Byte;
 begin
-  if (dtStatusFailed(getPortalPoints(from, &to, @left,@right, @fromType, @toType))) then
+  if (dtStatusFailed(getPortalPoints(from, &to, @left[0],@right[0], @fromType, @toType))) then
     Exit(DT_FAILURE or DT_INVALID_PARAM);
   mid[0] := (left[0]+right[0])*0.5;
   mid[1] := (left[1]+right[1])*0.5;
@@ -2779,7 +2779,7 @@ function TdtNavMeshQuery.getEdgeMidPoint(from: TdtPolyRef; fromPoly: PdtPoly; fr
                mid: PSingle): TdtStatus;
 var left, right: array [0..2] of Single;
 begin
-  if (dtStatusFailed(getPortalPoints(from, fromPoly, fromTile, &to, toPoly, toTile, @left, @right))) then
+  if (dtStatusFailed(getPortalPoints(from, fromPoly, fromTile, &to, toPoly, toTile, @left[0], @right[0]))) then
     Exit(DT_FAILURE or DT_INVALID_PARAM);
   mid[0] := (left[0]+right[0])*0.5;
   mid[1] := (left[1]+right[1])*0.5;
@@ -2839,7 +2839,7 @@ begin
 
   t^ := hit.t;
   if (hitNormal <> nil) then
-    dtVcopy(hitNormal, @hit.hitNormal);
+    dtVcopy(hitNormal, @hit.hitNormal[0]);
   if (pathCount <> nil) then
     pathCount^ := hit.pathCount;
 
@@ -2907,9 +2907,9 @@ begin
 
   n := 0;
 
-  dtVcopy(@curPos, startPos);
-  dtVsub(@dir, endPos, startPos);
-  dtVset(@hit.hitNormal, 0, 0, 0);
+  dtVcopy(@curPos[0], startPos);
+  dtVsub(@dir[0], endPos, startPos);
+  dtVset(@hit.hitNormal[0], 0, 0, 0);
 
   status := DT_SUCCESS;
 
@@ -2935,7 +2935,7 @@ begin
       Inc(nv);
     end;
 
-    if (not dtIntersectSegmentPoly2D(startPos, endPos, @verts, nv, @tmin, @tmax, @segMin, @segMax)) then
+    if (not dtIntersectSegmentPoly2D(startPos, endPos, @verts[0], nv, @tmin, @tmax, @segMin, @segMax)) then
     begin
       // Could not hit the polygon, keep the old t and report hit.
       hit.pathCount := n;
@@ -2962,7 +2962,7 @@ begin
 
       // add the cost
       if (options and Byte(DT_RAYCAST_USE_COSTS) <> 0) then
-        hit.pathCost := hit.pathCost + filter.getCost(@curPos, endPos, prevRef, prevTile, prevPoly, curRef, tile, poly, curRef, tile, poly);
+        hit.pathCost := hit.pathCost + filter.getCost(@curPos[0], endPos, prevRef, prevTile, prevPoly, curRef, tile, poly, curRef, tile, poly);
       Exit(status);
     end;
 
@@ -3064,16 +3064,16 @@ begin
     begin
       // compute the intersection point at the furthest end of the polygon
       // and correct the height (since the raycast moves in 2d)
-      dtVcopy(@lastPos, @curPos);
-      dtVmad(@curPos, startPos, @dir, hit.t);
+      dtVcopy(@lastPos[0], @curPos[0]);
+      dtVmad(@curPos[0], startPos, @dir[0], hit.t);
       e1 := @verts[segMax*3];
       e2 := @verts[((segMax+1) mod nv)*3];
-      dtVsub(@eDir, e2, e1);
-      dtVsub(@diff, @curPos, e1);
+      dtVsub(@eDir[0], e2, e1);
+      dtVsub(@diff[0], @curPos[0], e1);
       if Sqr(eDir[0]) > Sqr(eDir[2]) then s := diff[0] / eDir[0] else s := diff[2] / eDir[2];
       curPos[1] := e1[1] + eDir[1] * s;
 
-      hit.pathCost := hit.pathCost + filter.getCost(@lastPos, @curPos, prevRef, prevTile, prevPoly, curRef, tile, poly, nextRef, nextTile, nextPoly);
+      hit.pathCost := hit.pathCost + filter.getCost(@lastPos[0], @curPos[0], prevRef, prevTile, prevPoly, curRef, tile, poly, nextRef, nextTile, nextPoly);
     end;
 
     if (nextRef = 0) then
@@ -3090,7 +3090,7 @@ begin
       hit.hitNormal[0] := dz;
       hit.hitNormal[1] := 0;
       hit.hitNormal[2] := -dx;
-      dtVnormalize(@hit.hitNormal);
+      dtVnormalize(@hit.hitNormal[0]);
 
       hit.pathCount := n;
       Exit(status);
@@ -3236,14 +3236,14 @@ begin
       end;
 
       // Find edge and calc distance to the edge.
-      if (getPortalPoints(bestRef, bestPoly, bestTile, neighbourRef, neighbourPoly, neighbourTile, @va, @vb) = 0) then
+      if (getPortalPoints(bestRef, bestPoly, bestTile, neighbourRef, neighbourPoly, neighbourTile, @va[0], @vb[0]) = 0) then
       begin
         i := bestTile.links[i].next;
         continue;
       end;
 
       // If the circle is not touching the next polygon, skip it.
-      distSqr := dtDistancePtSegSqr2D(centerPos, @va, @vb, @tseg);
+      distSqr := dtDistancePtSegSqr2D(centerPos, @va[0], @vb[0], @tseg);
       if (distSqr > radiusSqr) then
       begin
         i := bestTile.links[i].next;
@@ -3266,7 +3266,7 @@ begin
 
       // Cost
       if (neighbourNode.flags = 0) then
-        dtVlerp(@neighbourNode.pos, @va, @vb, 0.5);
+        dtVlerp(@neighbourNode.pos, @va[0], @vb[0], 0.5);
 
       total := bestNode.total + dtVdist(@bestNode.pos, @neighbourNode.pos);
 
@@ -3360,11 +3360,11 @@ begin
 
   centerPos[0] := 0; centerPos[1] := 0; centerPos[2] := 0;
   for i := 0 to nverts - 1 do
-    dtVadd(@centerPos,@centerPos,@verts[i*3]);
-  dtVscale(@centerPos,@centerPos,1.0/nverts);
+    dtVadd(@centerPos[0],@centerPos[0],@verts[i*3]);
+  dtVscale(@centerPos[0],@centerPos[0],1.0/nverts);
 
   startNode := m_nodePool.getNode(startRef);
-  dtVcopy(@startNode.pos, @centerPos);
+  dtVcopy(@startNode.pos, @centerPos[0]);
   startNode.pidx := 0;
   startNode.cost := 0;
   startNode.total := 0;
@@ -3437,14 +3437,14 @@ begin
       end;
 
       // Find edge and calc distance to the edge.
-      if (getPortalPoints(bestRef, bestPoly, bestTile, neighbourRef, neighbourPoly, neighbourTile, @va, @vb) = 0) then
+      if (getPortalPoints(bestRef, bestPoly, bestTile, neighbourRef, neighbourPoly, neighbourTile, @va[0], @vb[0]) = 0) then
       begin
         i := bestTile.links[i].next;
         continue;
       end;
 
       // If the poly is not touching the edge to the next polygon, skip the connection it.
-      if (not dtIntersectSegmentPoly2D(@va, @vb, verts, nverts, @tmin, @tmax, @segMin, @segMax)) then
+      if (not dtIntersectSegmentPoly2D(@va[0], @vb[0], verts, nverts, @tmin, @tmax, @segMin, @segMax)) then
       begin
         i := bestTile.links[i].next;
         continue;
@@ -3471,7 +3471,7 @@ begin
 
       // Cost
       if (neighbourNode.flags = 0) then
-        dtVlerp(@neighbourNode.pos, @va, @vb, 0.5);
+        dtVlerp(@neighbourNode.pos, @va[0], @vb[0], 0.5);
 
       total := bestNode.total + dtVdist(@bestNode.pos, @neighbourNode.pos);
 
@@ -3650,14 +3650,14 @@ begin
       end;
 
       // Find edge and calc distance to the edge.
-      if (getPortalPoints(curRef, curPoly, curTile, neighbourRef, neighbourPoly, neighbourTile, @va, @vb) = 0) then
+      if (getPortalPoints(curRef, curPoly, curTile, neighbourRef, neighbourPoly, neighbourTile, @va[0], @vb[0]) = 0) then
       begin
         i := curTile.links[i].next;
         continue;
       end;
 
       // If the circle is not touching the next polygon, skip it.
-      distSqr := dtDistancePtSegSqr2D(centerPos, @va, @vb, @tseg);
+      distSqr := dtDistancePtSegSqr2D(centerPos, @va[0], @vb[0], @tseg);
       if (distSqr > radiusSqr) then
       begin
         i := curTile.links[i].next;
@@ -3707,7 +3707,7 @@ begin
         for k0 := 0 to npb - 1 do
           dtVcopy(@pb[k0*3], @pastTile.verts[pastPoly.verts[k0]*3]);
 
-        if (dtOverlapPolyPoly2D(@pa,npa, @pb,npb)) then
+        if (dtOverlapPolyPoly2D(@pa[0],npa, @pb[0],npb)) then
         begin
           overlap := true;
           break;
@@ -3833,7 +3833,7 @@ begin
             m_nav.getTileAndPolyByRefUnsafe(link.ref, @neiTile, @neiPoly);
             if (filter.passFilter(link.ref, neiTile, neiPoly)) then
             begin
-              insertInterval(@ints, @nints, MAX_INTERVAL, link.bmin, link.bmax, link.ref);
+              insertInterval(@ints[0], @nints, MAX_INTERVAL, link.bmin, link.bmax, link.ref);
             end;
           end;
         end;
@@ -3882,8 +3882,8 @@ begin
     end;
 
     // Add sentinels
-    insertInterval(@ints, @nints, MAX_INTERVAL, -1, 0, 0);
-    insertInterval(@ints, @nints, MAX_INTERVAL, 255, 256, 0);
+    insertInterval(@ints[0], @nints, MAX_INTERVAL, -1, 0, 0);
+    insertInterval(@ints[0], @nints, MAX_INTERVAL, 255, 256, 0);
 
     // Store segments.
     vj := @tile.verts[poly.verts[j]*3];
