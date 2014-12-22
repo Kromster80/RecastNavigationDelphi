@@ -127,7 +127,7 @@ begin
   if (inum <= trisPerChunk) then
   begin
     // Leaf
-    calcExtends(items, nitems, imin, imax, @node.bmin, @node.bmax);
+    calcExtends(items, nitems, imin, imax, @node.bmin[0], @node.bmax[0]);
 
     // Copy triangles.
     node.i := curTri^;
@@ -146,7 +146,7 @@ begin
   else
   begin
     // Split
-    calcExtends(items, nitems, imin, imax, @node.bmin, @node.bmax);
+    calcExtends(items, nitems, imin, imax, @node.bmin[0], @node.bmax[0]);
 
     axis := longestAxis(node.bmax[0] - node.bmin[0],
                  node.bmax[1] - node.bmin[1]);
@@ -253,7 +253,7 @@ begin
   while (i < cm.nnodes) do
   begin
     node := @cm.nodes[i];
-    overlap := checkOverlapRect(bmin, bmax, @node.bmin, @node.bmax);
+    overlap := checkOverlapRect(bmin, bmax, @node.bmin[0], @node.bmax[0]);
     isLeafNode := node.i >= 0;
 
     if (isLeafNode and overlap) then
@@ -319,7 +319,7 @@ begin
   while (i < cm.nnodes) do
   begin
     node := @cm.nodes[i];
-    overlap := checkOverlapSegment(p, q, @node.bmin, @node.bmax);
+    overlap := checkOverlapSegment(p, q, @node.bmin[0], @node.bmax[0]);
     isLeafNode := node.i >= 0;
 
     if (isLeafNode and overlap) then

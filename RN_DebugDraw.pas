@@ -602,11 +602,11 @@ begin
   //if (!dd) Result :=;
   if (vdistSqr(p,q) < eps*eps) then Exit;
   ay[0] := 0; ay[1] := 1; ay[2] := 0;
-  vsub(@az, @q, @p);
-  vnormalize(@az);
-  vcross(@ax, @ay, @az);
-  vcross(@ay, @az, @ax);
-  vnormalize(@ay);
+  vsub(@az[0], q, p);
+  vnormalize(@az[0]);
+  vcross(@ax[0], @ay[0], @az[0]);
+  vcross(@ay[0], @az[0], @ax[0]);
+  vnormalize(@ay[0]);
 
   dd.vertex(p, col);
 //  dd.vertex(p[0]+az[0]*s+ay[0]*s/2, p[1]+az[1]*s+ay[1]*s/2, p[2]+az[2]*s+ay[2]*s/2, col);
@@ -631,12 +631,12 @@ begin
   dz := z1 - z0;
   len := sqrt(dx*dx + dy*dy + dz*dz);
   //float prev[3];
-  evalArc(x0,y0,z0, dx,dy,dz, len*h, PAD, @prev);
+  evalArc(x0,y0,z0, dx,dy,dz, len*h, PAD, @prev[0]);
   for i := 1 to NUM_ARC_PTS do
   begin
     u := PAD + i * ARC_PTS_SCALE;
     //float pt[3];
-    evalArc(x0,y0,z0, dx,dy,dz, len*h, u, @pt);
+    evalArc(x0,y0,z0, dx,dy,dz, len*h, u, @pt[0]);
     dd.vertex(prev[0],prev[1],prev[2], col);
     dd.vertex(pt[0],pt[1],pt[2], col);
     prev[0] := pt[0]; prev[1] := pt[1]; prev[2] := pt[2];
@@ -646,17 +646,17 @@ begin
   if (as0 > 0.001) then
   begin
     //float p[3], q[3];
-    evalArc(x0,y0,z0, dx,dy,dz, len*h, PAD, @p);
-    evalArc(x0,y0,z0, dx,dy,dz, len*h, PAD+0.05, @q);
-    appendArrowHead(dd, @p, @q, as0, col);
+    evalArc(x0,y0,z0, dx,dy,dz, len*h, PAD, @p[0]);
+    evalArc(x0,y0,z0, dx,dy,dz, len*h, PAD+0.05, @q[0]);
+    appendArrowHead(dd, @p[0], @q[0], as0, col);
   end;
 
   if (as1 > 0.001) then
   begin
     //float p[3], q[3];
-    evalArc(x0,y0,z0, dx,dy,dz, len*h, 1-PAD, @p);
-    evalArc(x0,y0,z0, dx,dy,dz, len*h, 1-(PAD+0.05), @q);
-    appendArrowHead(dd, @p, @q, as1, col);
+    evalArc(x0,y0,z0, dx,dy,dz, len*h, 1-PAD, @p[0]);
+    evalArc(x0,y0,z0, dx,dy,dz, len*h, 1-(PAD+0.05), @q[0]);
+    appendArrowHead(dd, @p[0], @q[0], as1, col);
   end;
 end;
 
@@ -671,9 +671,9 @@ begin
   // End arrows
   p[0] := x0; p[1] := y0; p[2] := z0; q[0] := x1; q[1] := y1; q[2] := z1;
   if (as0 > 0.001) then
-    appendArrowHead(dd, @p, @q, as0, col);
+    appendArrowHead(dd, @p[0], @q[0], as0, col);
   if (as1 > 0.001) then
-    appendArrowHead(dd, @q, @p, as1, col);
+    appendArrowHead(dd, @q[0], @p[0], as1, col);
 end;
 
 procedure duAppendCircle(dd: TduDebugDraw; x,y,z,r: Single; col: Cardinal);
