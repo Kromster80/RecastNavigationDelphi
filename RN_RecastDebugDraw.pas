@@ -87,9 +87,9 @@ begin
     uvc[0] := vc[ax]*texScale;
     uvc[1] := vc[ay]*texScale;
 
-    dd.vertex(va, color, @uva);
-    dd.vertex(vb, color, @uvb);
-    dd.vertex(vc, color, @uvc);
+    dd.vertex(va, color, @uva[0]);
+    dd.vertex(vb, color, @uvb[0]);
+    dd.vertex(vc, color, @uvc[0]);
   end;
   dd.&end();
   dd.texture(false);
@@ -155,7 +155,7 @@ var orig: PSingle; cs,ch: Single; w,h: Integer; fcol: array [0..5] of Cardinal; 
 begin
   if (dd = nil) then Exit;
 
-  orig := @hf.bmin;
+  orig := @hf.bmin[0];
   cs := hf.cs;
   ch := hf.ch;
 
@@ -176,7 +176,7 @@ begin
       s := hf.spans[x + y*w];
       while (s <> nil) do
       begin
-        duAppendBox(dd, fx, orig[1]+s.smin*ch, fz, fx+cs, orig[1] + s.smax*ch, fz+cs, @fcol);
+        duAppendBox(dd, fx, orig[1]+s.smin*ch, fz, fx+cs, orig[1] + s.smax*ch, fz+cs, @fcol[0]);
         s := s.next;
       end;
     end;
@@ -189,7 +189,7 @@ var orig: PSingle; cs,ch: Single; w,h: Integer; fcol: array [0..5] of Cardinal; 
 begin
   if (dd = nil) then Exit;
 
-  orig := @hf.bmin;
+  orig := @hf.bmin[0];
   cs := hf.cs;
   ch := hf.ch;
 
@@ -217,7 +217,7 @@ begin
         else
           fcol[0] := duMultCol(duIntToCol(s.area, 255), 200);
 
-        duAppendBox(dd, fx, orig[1]+s.smin*ch, fz, fx+cs, orig[1] + s.smax*ch, fz+cs, @fcol);
+        duAppendBox(dd, fx, orig[1]+s.smin*ch, fz, fx+cs, orig[1] + s.smax*ch, fz+cs, @fcol[0]);
         s := s.next;
       end;
     end;
@@ -705,7 +705,7 @@ a: Byte; col: Cardinal;
 begin
   if (dd = nil) then Exit;
 
-  orig := @cset.bmin;
+  orig := @cset.bmin[0];
   cs := cset.cs;
   ch := cset.ch;
 
@@ -718,7 +718,7 @@ begin
   for i := 0 to cset.nconts - 1 do
   begin
     cont := @cset.conts[i];
-    getContourCenter(cont, orig, cs, ch, @pos);
+    getContourCenter(cont, orig, cs, ch, @pos[0]);
     for j := 0 to cont.nverts - 1 do
     begin
       v := @cont.verts[j*4];
@@ -726,7 +726,7 @@ begin
       cont2 := findContourFromSet(cset, Word(v[3]));
       if (cont2 <> nil) then
       begin
-        getContourCenter(cont2, orig, cs, ch, @pos2);
+        getContourCenter(cont2, orig, cs, ch, @pos2[0]);
         duAppendArc(dd, pos[0],pos[1],pos[2], pos2[0],pos2[1],pos2[2], 0.25, 0.6, 0.6, color);
       end;
     end;
@@ -742,8 +742,8 @@ begin
   begin
     cont := @cset.conts[i];
     col := duDarkenCol(duIntToCol(cont.reg,a));
-    getContourCenter(cont, orig, cs, ch, @pos);
-    dd.vertex(@pos, col);
+    getContourCenter(cont, orig, cs, ch, @pos[0]);
+    dd.vertex(@pos[0], col);
   end;
   dd.&end();
 end;
@@ -754,7 +754,7 @@ off: Single;
 begin
   if (dd = nil) then Exit;
 
-  orig := @cset.bmin;
+  orig := @cset.bmin[0];
   cs := cset.cs;
   ch := cset.ch;
 
@@ -819,7 +819,7 @@ off: Single;
 begin
   if (dd = nil) then Exit;
 
-  orig := @cset.bmin;
+  orig := @cset.bmin[0];
   cs := cset.cs;
   ch := cset.ch;
 
@@ -893,7 +893,7 @@ begin
   nvp := mesh.nvp;
   cs := mesh.cs;
   ch := mesh.ch;
-  orig := @mesh.bmin;
+  orig := @mesh.bmin[0];
 
   dd.&begin(DU_DRAW_TRIS);
 

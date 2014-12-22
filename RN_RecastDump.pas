@@ -59,7 +59,7 @@ begin
   nvp := pmesh.nvp;
   cs := pmesh.cs;
   ch := pmesh.ch;
-  orig := @pmesh.bmin;
+  orig := @pmesh.bmin[0];
 
   io.Append('# Recast Navmesh');
   io.Append('o NavMesh');
@@ -96,7 +96,7 @@ end;
 
 function duDumpPolyMeshDetailToObj(dmesh: PrcPolyMeshDetail; aFilename: string): Boolean;
 var io: TStringList;
-i,j: Integer; v: PSingle; m: PInteger; bverts,btris,ntris: Cardinal; tris: PByte;
+i,j: Integer; v: PSingle; m: PCardinal; bverts,btris,ntris: Cardinal; tris: PByte;
 begin
   io := TStringList.Create;
 

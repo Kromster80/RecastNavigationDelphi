@@ -865,8 +865,8 @@ begin
 
   ctx.startTimer(RC_TIMER_BUILD_CONTOURS);
 
-  rcVcopy(@cset.bmin, @chf.bmin);
-  rcVcopy(@cset.bmax, @chf.bmax);
+  rcVcopy(@cset.bmin[0], @chf.bmin[0]);
+  rcVcopy(@cset.bmax[0], @chf.bmax[0]);
   if (borderSize > 0) then
   begin
     // If the heightfield was build with bordersize, remove the offset.
