@@ -114,6 +114,7 @@ uses
   type
   /// Defines a polyogn within a dtMeshTile object.
   /// @ingroup detour
+  PPdtPoly = ^PdtPoly;
   PdtPoly = ^TdtPoly;
   TdtPoly = record
 
@@ -241,6 +242,7 @@ uses
 
   /// Defines a navigation mesh tile.
   /// @ingroup detour
+  PPdtMeshTile = ^PdtMeshTile;
   PdtMeshTile = ^TdtMeshTile;
   TdtMeshTile = record
     salt: Cardinal;          ///< Counter describing modifications to the tile.
@@ -349,7 +351,7 @@ uses
     ///  @param[out]  tiles    A pointer to an array of tiles that will hold the result.
     ///  @param[in]    maxTiles  The maximum tiles the tiles parameter can hold.
     /// @return The number of tiles returned in the tiles array.
-    function getTilesAt(x, y: Integer; tiles: PPointer; maxTiles: Integer): Integer;
+    function getTilesAt(x, y: Integer; tiles: PPdtMeshTile; maxTiles: Integer): Integer;
 
     /// Gets the tile reference for the tile at specified grid location.
     ///  @param[in]  x    The tile's x-location. (x, y, layer)
@@ -383,13 +385,13 @@ uses
     ///  @param[out]  tile  The tile containing the polygon.
     ///  @param[out]  poly  The polygon.
     /// @return The status flags for the operation.
-    function getTileAndPolyByRef(ref: TdtPolyRef; tile: PPointer; poly: PPointer): TdtStatus;
+    function getTileAndPolyByRef(ref: TdtPolyRef; tile: PPdtMeshTile; poly: PPdtPoly): TdtStatus;
 
     /// Returns the tile and polygon for the specified polygon reference.
     ///  @param[in]    ref    A known valid reference for a polygon.
     ///  @param[out]  tile  The tile containing the polygon.
     ///  @param[out]  poly  The polygon.
-    procedure getTileAndPolyByRefUnsafe(ref: TdtPolyRef; tile: PPointer; poly: PPointer);
+    procedure getTileAndPolyByRefUnsafe(ref: TdtPolyRef; tile: PPdtMeshTile; poly: PPdtPoly);
 
     /// Checks the validity of a polygon reference.
     ///  @param[in]  ref    The polygon reference to check.
@@ -531,7 +533,7 @@ uses
     //function getTilesAt(x, y: Integer; tiles: Pointer; maxTiles: Integer): Integer;
 
     /// Returns neighbour tile based on side.
-    function getNeighbourTilesAt(x, y, side: Integer; tiles: PPointer; maxTiles: Integer): Integer;
+    function getNeighbourTilesAt(x, y, side: Integer; tiles: PPdtMeshTile; maxTiles: Integer): Integer;
 
     /// Returns all polygons in neighbour tile based on portal defined by the segment.
     function findConnectingPolys(va, vb: PSingle;
@@ -870,7 +872,7 @@ function TdtNavMesh.init(params: PdtNavMeshParams): TdtStatus;
 var i: Integer;
 begin
   Move(params^, m_params, sizeof(TdtNavMeshParams));
-  dtVcopy(@m_orig, @params.orig);
+  dtVcopy(@m_orig[0], @params.orig[0]);
   m_tileWidth := params.tileWidth;
   m_tileHeight := params.tileHeight;
 
@@ -917,7 +919,7 @@ begin
   if (header.version <> DT_NAVMESH_VERSION) then
     Exit(DT_FAILURE or DT_WRONG_VERSION);
 
-  dtVcopy(@params.orig, @header.bmin);
+  dtVcopy(@params.orig[0], @header.bmin[0]);
   params.tileWidth := header.bmax[0] - header.bmin[0];
   params.tileHeight := header.bmax[2] - header.bmin[2];
   params.maxTiles := 1;
@@ -948,7 +950,7 @@ vc,vd: PSingle; bpos: Single;
 begin
   if (tile = nil) then Exit(0);
 
-  calcSlabEndPoints(va, vb, @amin, @amax, side);
+  calcSlabEndPoints(va, vb, @amin[0], @amax[0], side);
   apos := getSlabCoord(va, side);
 
   // Remove links pointing to 'side' and compact the links array.
@@ -975,9 +977,9 @@ begin
         continue;
 
       // Check if the segments touch.
-      calcSlabEndPoints(vc,vd, @bmin,@bmax, side);
+      calcSlabEndPoints(vc,vd, @bmin[0],@bmax[0], side);
 
-      if (not overlapSlabs(@amin,@amax, @bmin,@bmax, 0.01, tile.header.walkableClimb)) then continue;
+      if (not overlapSlabs(@amin[0],@amax[0], @bmin[0],@bmax[0], 0.01, tile.header.walkableClimb)) then continue;
 
       // Add return value.
       if (n < maxcon) then
@@ -1122,7 +1124,7 @@ begin
     // Find polygon to connect to.
     p := @targetCon.pos[3];
 
-    ref := findNearestPolyInTile(tile, p, @ext, @nearestPt);
+    ref := findNearestPolyInTile(tile, p, @ext[0], @nearestPt[0]);
     if (ref = 0) then
       continue;
     // findNearestPoly may return too optimistic results, further check to make sure.
@@ -1130,7 +1132,7 @@ begin
       continue;
     // Make sure the location is on current mesh.
     v := @target.verts[targetPoly.verts[1]*3];
-    dtVcopy(v, @nearestPt);
+    dtVcopy(v, @nearestPt[0]);
 
     // Link off-mesh connection to target poly.
     idx := allocLink(target);
@@ -1225,14 +1227,14 @@ begin
     // Find polygon to connect to.
     p := @con.pos[0]; // First vertex
 
-    ref := findNearestPolyInTile(tile, p, @ext, @nearestPt);
+    ref := findNearestPolyInTile(tile, p, @ext[0], @nearestPt[0]);
     if (ref = 0) then continue;
     // findNearestPoly may return too optimistic results, further check to make sure.
     if (Sqr(nearestPt[0]-p[0])+Sqr(nearestPt[2]-p[2]) > Sqr(con.rad)) then
       continue;
     // Make sure the location is on current mesh.
     v := @tile.verts[poly.verts[0]*3];
-    dtVcopy(v, @nearestPt);
+    dtVcopy(v, @nearestPt[0]);
 
     // Link off-mesh connection to target poly.
     idx := allocLink(tile);
@@ -1298,7 +1300,7 @@ begin
     dtVcopy(@verts[i*3], @tile.verts[poly.verts[i]*3]);
 
   dtVcopy(closest, pos);
-  if (not dtDistancePtPolyEdgesSqr(pos, @verts, nv, @edged, @edget)) then
+  if (not dtDistancePtPolyEdgesSqr(pos, @verts[0], nv, @edged[0], @edget[0])) then
   begin
     // Point is outside the polygon, dtClamp to nearest edge.
     dmin := MaxSingle;
@@ -1335,7 +1337,7 @@ begin
       else
         v[k] := @tile.detailVerts[(pd.vertBase+(t[k]-poly.vertCount))*3];
     end;
-    if (dtClosestHeightPointTriangle(@pos, v[0], v[1], v[2], @h)) then
+    if (dtClosestHeightPointTriangle(pos, v[0], v[1], v[2], @h)) then
     begin
       closest[1] := h;
       break;
@@ -1347,11 +1349,11 @@ function TdtNavMesh.findNearestPolyInTile(tile: PdtMeshTile; center, extents, ne
 var bmin,bmax,closestPtPoly,diff: array [0..2] of Single; polys: array[0..127] of TdtPolyRef; polyCount,i: Integer; nearest: TdtPolyRef;
 nearestDistanceSqr: Single; ref: TdtPolyRef; posOverPoly: Boolean; d: Single;
 begin
-  dtVsub(@bmin, center, extents);
-  dtVadd(@bmax, center, extents);
+  dtVsub(@bmin[0], center, extents);
+  dtVadd(@bmax[0], center, extents);
 
   // Get nearby polygons from proximity grid.
-  polyCount := queryPolygonsInTile(tile, @bmin, @bmax, @polys, 128);
+  polyCount := queryPolygonsInTile(tile, @bmin[0], @bmax[0], @polys[0], 128);
 
   // Find nearest polygon amongst the nearby polygons.
   nearest := 0;
@@ -1360,11 +1362,11 @@ begin
   begin
     ref := polys[i];
     posOverPoly := false;
-    closestPointOnPoly(ref, center, @closestPtPoly, @posOverPoly);
+    closestPointOnPoly(ref, center, @closestPtPoly[0], @posOverPoly);
 
     // If a point is directly over a polygon and closer than
     // climb height, favor that instead of straight line nearest point.
-    dtVsub(@diff, center, @closestPtPoly);
+    dtVsub(@diff[0], center, @closestPtPoly[0]);
     if (posOverPoly) then
     begin
       d := Abs(diff[1]) - tile.header.walkableClimb;
@@ -1372,12 +1374,12 @@ begin
     end
     else
     begin
-      d := dtVlenSqr(@diff);
+      d := dtVlenSqr(@diff[0]);
     end;
 
     if (d < nearestDistanceSqr) then
     begin
-      dtVcopy(nearestPt, @closestPtPoly);
+      dtVcopy(nearestPt, @closestPtPoly[0]);
       nearestDistanceSqr := d;
       nearest := ref;
     end;
@@ -1387,7 +1389,7 @@ begin
 end;
 
 function TdtNavMesh.queryPolygonsInTile(tile: PdtMeshTile; qmin, qmax: PSingle; polys: PdtPolyRef; maxPolys: Integer): Integer;
-var node: PdtBVNode; &end: PdtBVNode; tbmin,tbmax: Psingle; qfac: Single; bmin,bmax: array [0..2] of Word;
+var node: PdtBVNode; &end: PdtBVNode; tbmin,tbmax: Psingle; qfac: Single; bmin,bmax: array [0..2] of Word; bminf,bmaxf: array [0..2] of Single;
 minx,miny,minz,maxx,maxy,maxz: Single; base: TdtPolyRef; i,j,n,escapeIndex: Integer; overlap,isLeafNode: Boolean; p: PdtPoly;
 v: PSingle;
 begin
@@ -1420,7 +1422,7 @@ begin
     n := 0;
     while (node < &end) do
     begin
-      overlap := dtOverlapQuantBounds(@bmin, @bmax, @node.bmin, @node.bmax);
+      overlap := dtOverlapQuantBounds(@bmin[0], @bmax[0], @node.bmin[0], @node.bmax[0]);
       isLeafNode := node.i >= 0;
 
       if (isLeafNode and overlap) then
@@ -1455,15 +1457,15 @@ begin
         continue;
       // Calc polygon bounds.
       v := @tile.verts[p.verts[0]*3];
-      dtVcopy(@bmin, v);
-      dtVcopy(@bmax, v);
+      dtVcopy(@bminf[0], v);
+      dtVcopy(@bmaxf[0], v);
       for j := 1 to p.vertCount - 1 do
       begin
         v := @tile.verts[p.verts[j]*3];
-        dtVmin(@bmin, v);
-        dtVmax(@bmax, v);
+        dtVmin(@bminf[0], v);
+        dtVmax(@bmaxf[0], v);
       end;
-      if (dtOverlapBounds(qmin,qmax, @bmin,@bmax)) then
+      if (dtOverlapBounds(qmin,qmax, @bminf[0],@bmaxf[0])) then
       begin
         if (n < maxPolys) then
         begin
@@ -1595,7 +1597,7 @@ begin
   // Create connections with neighbour tiles.
 
   // Connect with layers in current tile.
-  nneis := getTilesAt(header.x, header.y, @neis, MAX_NEIS);
+  nneis := getTilesAt(header.x, header.y, @neis[0], MAX_NEIS);
   for j := 0 to nneis - 1 do
   begin
     if (neis[j] <> tile) then
@@ -1610,7 +1612,7 @@ begin
   // Connect with neighbour tiles.
   for i := 0 to 7 do
   begin
-    nneis := getNeighbourTilesAt(header.x, header.y, i, @neis, MAX_NEIS);
+    nneis := getNeighbourTilesAt(header.x, header.y, i, @neis[0], MAX_NEIS);
     for j := 0 to nneis - 1 do
     begin
       connectExtLinks(tile, neis[j], i);
@@ -1646,7 +1648,7 @@ begin
   Result := nil;
 end;
 
-function TdtNavMesh.getNeighbourTilesAt(x, y, side: Integer; tiles: PPointer; maxTiles: Integer): Integer;
+function TdtNavMesh.getNeighbourTilesAt(x, y, side: Integer; tiles: PPdtMeshTile; maxTiles: Integer): Integer;
 var nx,ny: Integer;
 begin
   nx := x; ny := y;
@@ -1664,7 +1666,7 @@ begin
   Result := getTilesAt(nx, ny, tiles, maxTiles);
 end;
 
-function TdtNavMesh.getTilesAt(x, y: Integer; tiles: PPointer; maxTiles: Integer): Integer;
+function TdtNavMesh.getTilesAt(x, y: Integer; tiles: PPdtMeshTile; maxTiles: Integer): Integer;
 var n,h: Integer; tile: PdtMeshTile;
 begin
   n := 0;
@@ -1741,7 +1743,7 @@ begin
   ty^ := floor((pos[2]-m_orig[2]) / m_tileHeight);
 end;
 
-function TdtNavMesh.getTileAndPolyByRef(ref: TdtPolyRef; tile: PPointer; poly: PPointer): TdtStatus;
+function TdtNavMesh.getTileAndPolyByRef(ref: TdtPolyRef; tile: PPdtMeshTile; poly: PPdtPoly): TdtStatus;
 var salt, it, ip: Cardinal;
 begin
   if (ref = 0) then Exit(DT_FAILURE);
@@ -1759,7 +1761,7 @@ end;
 /// @warning Only use this function if it is known that the provided polygon
 /// reference is valid. This function is faster than #getTileAndPolyByRef, but
 /// it does not validate the reference.
-procedure TdtNavMesh.getTileAndPolyByRefUnsafe(ref: TdtPolyRef; tile: PPointer; poly: PPointer);
+procedure TdtNavMesh.getTileAndPolyByRefUnsafe(ref: TdtPolyRef; tile: PPdtMeshTile; poly: PPdtPoly);
 var salt, it, ip: Cardinal;
 begin
   decodePolyId(ref, @salt, @it, @ip);
