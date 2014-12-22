@@ -404,9 +404,9 @@ begin
   // Set the area where the navigation will be build.
   // Here the bounds of the input mesh are used, but the
   // area could be specified by an user defined box, etc.
-  rcVcopy(@m_cfg.bmin, bmin);
-  rcVcopy(@m_cfg.bmax, bmax);
-  rcCalcGridSize(@m_cfg.bmin, @m_cfg.bmax, m_cfg.cs, @m_cfg.width, @m_cfg.height);
+  rcVcopy(@m_cfg.bmin[0], bmin);
+  rcVcopy(@m_cfg.bmax[0], bmax);
+  rcCalcGridSize(@m_cfg.bmin[0], @m_cfg.bmax[0], m_cfg.cs, @m_cfg.width, @m_cfg.height);
 
   // Reset build times gathering.
   m_ctx.resetTimers();
@@ -429,7 +429,7 @@ begin
     m_ctx.log(RC_LOG_ERROR, 'buildNavigation: Out of memory 'solid'.');
     Exit(false);
   end;}
-  if (not rcCreateHeightfield(m_ctx, m_solid, m_cfg.width, m_cfg.height, @m_cfg.bmin, @m_cfg.bmax, m_cfg.cs, m_cfg.ch)) then
+  if (not rcCreateHeightfield(m_ctx, m_solid, m_cfg.width, m_cfg.height, @m_cfg.bmin[0], @m_cfg.bmax[0], m_cfg.cs, m_cfg.ch)) then
   begin
     m_ctx.log(RC_LOG_ERROR, 'buildNavigation: Could not create solid heightfield.');
     Exit(false);
@@ -665,8 +665,8 @@ begin
     params.walkableHeight := m_agentHeight;
     params.walkableRadius := m_agentRadius;
     params.walkableClimb := m_agentMaxClimb;
-    rcVcopy(@params.bmin, @m_pmesh.bmin);
-    rcVcopy(@params.bmax, @m_pmesh.bmax);
+    rcVcopy(@params.bmin[0], @m_pmesh.bmin[0]);
+    rcVcopy(@params.bmax[0], @m_pmesh.bmax[0]);
     params.cs := m_cfg.cs;
     params.ch := m_cfg.ch;
     params.buildBvTree := true;

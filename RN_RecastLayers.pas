@@ -106,7 +106,7 @@ var w,h: Integer; srcReg: PByte; nsweeps: Integer; sweeps: array of TrcLayerSwee
 regId: Byte; x,y,i,j,k: Integer; sweepId: Byte; c: PrcCompactCell; s,as1: PrcCompactSpan; sid: Byte; ax,ay,ai: Integer; nr: Byte; nregs: Integer;
 regs: array of TrcLayerRegion; lregs: array [0..RC_MAX_LAYERS-1] of Byte; nlregs: Integer; regi,dir,rai: Byte; ri,rj: PrcLayerRegion;
 layerId: Byte; stack: array [0..MAX_STACK-1] of Byte; nstack: Integer; root: PrcLayerRegion; reg,regn: PrcLayerRegion; nneis: Integer; nei: Byte;
-ymin,ymax: Integer; mergeHeight: Word; newId,oldId: Byte; overlap: Boolean; remap: array [0..255] of Byte; lw,lh: Integer; bmin, bmax: PSingle;
+ymin,ymax: Integer; mergeHeight: Word; newId,oldId: Byte; overlap: Boolean; remap: array [0..255] of Byte; lw,lh: Integer; bmin, bmax: array [0..2] of Single;
 curId: Byte; layer: PrcHeightfieldLayer; gridSize: Integer; hmin,hmax: Integer; cx,cy: Integer; lid,alid: Byte; idx: Integer; portal, con: Byte;
 nx,ny: Integer;
 begin
@@ -472,8 +472,8 @@ begin
   lh := h - borderSize*2;
 
   // Build contracted bbox for layers.
-  rcVcopy(bmin, @chf.bmin);
-  rcVcopy(bmax, @chf.bmax);
+  rcVcopy(@bmin[0], @chf.bmin[0]);
+  rcVcopy(@bmax[0], @chf.bmax[0]);
   bmin[0] := bmin[0] + borderSize*chf.cs;
   bmin[2] := bmin[2] + borderSize*chf.cs;
   bmax[0] := bmax[0] - borderSize*chf.cs;
@@ -521,8 +521,8 @@ begin
     layer.ch := chf.ch;
 
     // Adjust the bbox to fit the heighfield.
-    rcVcopy(@layer.bmin, bmin);
-    rcVcopy(@layer.bmax, bmax);
+    rcVcopy(@layer.bmin[0], @bmin[0]);
+    rcVcopy(@layer.bmax[0], @bmax[0]);
     layer.bmin[1] := bmin[1] + hmin*chf.ch;
     layer.bmax[1] := bmin[1] + hmax*chf.ch;
     layer.hmin := hmin;

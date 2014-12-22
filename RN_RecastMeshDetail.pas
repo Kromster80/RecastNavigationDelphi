@@ -85,19 +85,19 @@ begin
   v1[0] := 0; v1[1] := 0; v1[2] := 0;
 
   // Calculate the circle relative to p1, to avoid some precision issues.
-  rcVsub(@v2, p2, p1);
-  rcVsub(@v3, p3, p1);
+  rcVsub(@v2[0], p2, p1);
+  rcVsub(@v3[0], p3, p1);
 
-  cp := vcross2(@v1, @v2, @v3);
+  cp := vcross2(@v1[0], @v2[0], @v3[0]);
   if (abs(cp) > EPS) then
   begin
-    v1Sq := vdot2(@v1,@v1);
-    v2Sq := vdot2(@v2,@v2);
-    v3Sq := vdot2(@v3,@v3);
+    v1Sq := vdot2(@v1[0],@v1[0]);
+    v2Sq := vdot2(@v2[0],@v2[0]);
+    v3Sq := vdot2(@v3[0],@v3[0]);
     c[0] := (v1Sq*(v2[2]-v3[2]) + v2Sq*(v3[2]-v1[2]) + v3Sq*(v1[2]-v2[2])) / (2*cp);
     c[1] := 0;
     c[2] := (v1Sq*(v3[0]-v2[0]) + v2Sq*(v1[0]-v3[0]) + v3Sq*(v2[0]-v1[0])) / (2*cp);
-    r^ := vdist2(c, @v1);
+    r^ := vdist2(c, @v1[0]);
     rcVadd(c, c, p1);
     Exit(true);
   end;
@@ -111,15 +111,15 @@ function distPtTri(const p,a,b,c: PSingle): Single;
 const EPS = 0.0001;
 var v0,v1,v2: array [0..2] of Single; dot00,dot01,dot02,dot11,dot12: Single; invDenom,u,v,y: Single;
 begin
-  rcVsub(@v0, c,a);
-  rcVsub(@v1, b,a);
-  rcVsub(@v2, p,a);
+  rcVsub(@v0[0], c,a);
+  rcVsub(@v1[0], b,a);
+  rcVsub(@v2[0], p,a);
 
-  dot00 := vdot2(@v0, @v0);
-  dot01 := vdot2(@v0, @v1);
-  dot02 := vdot2(@v0, @v2);
-  dot11 := vdot2(@v1, @v1);
-  dot12 := vdot2(@v1, @v2);
+  dot00 := vdot2(@v0[0], @v0[0]);
+  dot01 := vdot2(@v0[0], @v1[0]);
+  dot02 := vdot2(@v0[0], @v2[0]);
+  dot11 := vdot2(@v1[0], @v1[0]);
+  dot12 := vdot2(@v1[0], @v2[0]);
 
   // Compute barycentric coordinates
   invDenom := 1.0 / (dot00 * dot11 - dot01 * dot01);
@@ -382,7 +382,7 @@ begin
         circumCircle(@pts[s*3], @pts[t*3], @pts[u*3], @c[0], @r);
         continue;
       end;
-      d := vdist2(@c, @pts[u*3]);
+      d := vdist2(@c[0], @pts[u*3]);
       tol := 0.001;
       if (d > r*(1+tol)) then
       begin
@@ -846,13 +846,13 @@ begin
         pt[0] := s[0]*sampleDist + getJitterX(i)*cs*0.1;
         pt[1] := s[1]*chf.ch;
         pt[2] := s[2]*sampleDist + getJitterY(i)*cs*0.1;
-        d := distToTriMesh(@pt, verts, nverts^, @tris.m_data[0], tris.size div 4);
+        d := distToTriMesh(@pt[0], verts, nverts^, @tris.m_data[0], tris.size div 4);
         if (d < 0) then continue; // did not hit the mesh.
         if (d > bestd) then
         begin
           bestd := d;
           besti := i;
-          rcVcopy(@bestpt,@pt);
+          rcVcopy(@bestpt[0],@pt[0]);
         end;
       end;
       // If the max error is within accepted threshold, stop tesselating.
@@ -861,7 +861,7 @@ begin
       // Mark sample as added.
       samples^[besti*4+3] := 1;
       // Add the new sample point.
-      rcVcopy(@verts[nverts^*3], @bestpt);
+      rcVcopy(@verts[nverts^*3], @bestpt[0]);
       Inc(nverts^);
 
       // Create new triangulation.
@@ -1187,7 +1187,7 @@ begin
   nvp := mesh.nvp;
   cs := mesh.cs;
   ch := mesh.ch;
-  orig := @mesh.bmin;
+  orig := @mesh.bmin[0];
   borderSize := mesh.borderSize;
 
   edges.Create(64);
@@ -1276,7 +1276,7 @@ begin
     nverts := 0;
     if (not buildPolyDetail(ctx, poly, npoly,
                sampleDist, sampleMaxError,
-               chf, @hp, @verts, @nverts, @tris,
+               chf, @hp, @verts[0], @nverts, @tris,
                @edges, @samples)) then
     begin
       Exit(false);

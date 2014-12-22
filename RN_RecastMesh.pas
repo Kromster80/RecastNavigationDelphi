@@ -814,13 +814,13 @@ begin
   end;
 
   if (nedges = 0) then
-  Exit(true);
+    Exit(true);
 
   // Start with one vertex, keep appending connected
   // segments to the start and end of the hole.
-  pushBack(edges[0], @hole, @nhole);
-  pushBack(edges[2], @hreg, @nhreg);
-  pushBack(edges[3], @harea, @nharea);
+  pushBack(edges[0], hole, @nhole);
+  pushBack(edges[2], hreg, @nhreg);
+  pushBack(edges[3], harea, @nharea);
 
   while (nedges <> 0) do
   begin
@@ -838,17 +838,17 @@ begin
       if (hole[0] = eb) then
       begin
         // The segment matches the beginning of the hole boundary.
-        pushFront(ea, @hole, @nhole);
-        pushFront(r, @hreg, @nhreg);
-        pushFront(a, @harea, @nharea);
+        pushFront(ea, hole, @nhole);
+        pushFront(r, hreg, @nhreg);
+        pushFront(a, harea, @nharea);
         add := true;
       end
       else if (hole[nhole-1] = ea) then
       begin
         // The segment matches the end of the hole boundary.
-        pushBack(eb, @hole, @nhole);
-        pushBack(r, @hreg, @nhreg);
-        pushBack(a, @harea, @nharea);
+        pushBack(eb, hole, @nhole);
+        pushBack(r, hreg, @nhreg);
+        pushBack(a, harea, @nharea);
         add := true;
       end;
       if (add) then
@@ -886,7 +886,7 @@ begin
   end;
 
   // Triangulate the hole.
-  ntris := triangulate(nhole, @tverts[0], @thole[0], @tris);
+  ntris := triangulate(nhole, @tverts[0], @thole[0], tris);
   if (ntris < 0) then
   begin
     ntris := -ntris;
@@ -1014,12 +1014,12 @@ indices,tris: PInteger; polys: PWord; tmpPoly: PWord; cont: PrcContour; ntris: I
 bestMergeVal,bestPa,bestPb,bestEa,bestEb: Integer; pj,pk: PWord; ea,eb: Integer; pa,pb,lastPoly,p,q,va,vb: PWord; v1,nj: Integer;
 w,h: Integer;
 begin
-  //rcAssert(ctx);
+  Assert(ctx <> nil);
 
   ctx.startTimer(RC_TIMER_BUILD_POLYMESH);
 
-  rcVcopy(@mesh.bmin, @cset.bmin);
-  rcVcopy(@mesh.bmax, @cset.bmax);
+  rcVcopy(@mesh.bmin[0], @cset.bmin[0]);
+  rcVcopy(@mesh.bmax[0], @cset.bmax[0]);
   mesh.cs := cset.cs;
   mesh.ch := cset.ch;
   mesh.borderSize := cset.borderSize;
@@ -1303,16 +1303,16 @@ begin
   mesh.nvp := meshes[0].nvp;
   mesh.cs := meshes[0].cs;
   mesh.ch := meshes[0].ch;
-  rcVcopy(@mesh.bmin, @meshes[0].bmin);
-  rcVcopy(@mesh.bmax, @meshes[0].bmax);
+  rcVcopy(@mesh.bmin[0], @meshes[0].bmin[0]);
+  rcVcopy(@mesh.bmax[0], @meshes[0].bmax[0]);
 
   maxVerts := 0;
   maxPolys := 0;
   maxVertsPerMesh := 0;
   for i := 0 to nmeshes - 1 do
   begin
-    rcVmin(@mesh.bmin, @meshes[i].bmin);
-    rcVmax(@mesh.bmax, @meshes[i].bmax);
+    rcVmin(@mesh.bmin[0], @meshes[i].bmin[0]);
+    rcVmax(@mesh.bmax[0], @meshes[i].bmax[0]);
     maxVertsPerMesh := rcMax(maxVertsPerMesh, meshes[i].nverts);
     Inc(maxVerts, meshes[i].nverts);
     Inc(maxPolys, meshes[i].npolys);
@@ -1361,7 +1361,7 @@ begin
     begin
       v := @pmesh.verts[j*3];
       vremap[j] := addVertex(v[0]+ox, v[1], v[2]+oz,
-                  @mesh.verts, @firstVert, @nextVert, @mesh.nverts);
+                  @mesh.verts, firstVert, nextVert, @mesh.nverts);
     end;
 
     for j := 0 to pmesh.npolys - 1 do

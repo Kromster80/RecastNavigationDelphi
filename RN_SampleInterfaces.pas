@@ -285,26 +285,26 @@ end;
 
 procedure TDebugDrawGL.vertex(const pos: PSingle; color: Cardinal);
 begin
-  glColor4ubv(@color);
-  glVertex3fv(Pointer(pos));
+  glColor4ubv(PGLubyte(@color));
+  glVertex3fv(PGLfloat(pos));
 end;
 
 procedure TDebugDrawGL.vertex(const x,y,z: Single; color: Cardinal);
 begin
-  glColor4ubv(@color);
+  glColor4ubv(PGLubyte(@color));
   glVertex3f(x,y,z);
 end;
 
 procedure TDebugDrawGL.vertex(const pos: PSingle; color: Cardinal; uv: PSingle);
 begin
-  glColor4ubv(@color);
-  glTexCoord2fv(Pointer(uv));
-  glVertex3fv(Pointer(pos));
+  glColor4ubv(PGLubyte(@color));
+  glTexCoord2fv(PGLfloat(uv));
+  glVertex3fv(PGLfloat(pos));
 end;
 
 procedure TDebugDrawGL.vertex(const x,y,z: Single; color: Cardinal; u,v: Single);
 begin
-  glColor4ubv(@color);
+  glColor4ubv(PGLubyte(@color));
   glTexCoord2f(u,v);
   glVertex3f(x,y,z);
 end;

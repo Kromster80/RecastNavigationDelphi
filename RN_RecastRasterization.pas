@@ -325,15 +325,15 @@ begin
   by := bmax[1] - bmin[1];
 
   // Calculate the bounding box of the triangle.
-  rcVcopy(@tmin, v0);
-  rcVcopy(@tmax, v0);
-  rcVmin(@tmin, v1);
-  rcVmin(@tmin, v2);
-  rcVmax(@tmax, v1);
-  rcVmax(@tmax, v2);
+  rcVcopy(@tmin[0], v0);
+  rcVcopy(@tmax[0], v0);
+  rcVmin(@tmin[0], v1);
+  rcVmin(@tmin[0], v2);
+  rcVmax(@tmax[0], v1);
+  rcVmax(@tmax[0], v2);
 
   // If the triangle does not touch the bbox of the heightfield, skip the triagle.
-  if (not overlapBounds(bmin, bmax, @tmin, @tmax)) then
+  if (not overlapBounds(bmin, bmax, @tmin[0], @tmax[0])) then
     Exit;
 
   // Calculate the footprint of the triangle on the grid's y-axis
@@ -426,7 +426,7 @@ begin
 
   ics := 1.0/solid.cs;
   ich := 1.0/solid.ch;
-  rasterizeTri(v0, v1, v2, area, solid, @solid.bmin, @solid.bmax, solid.cs, ics, ich, flagMergeThr);
+  rasterizeTri(v0, v1, v2, area, solid, @solid.bmin[0], @solid.bmax[0], solid.cs, ics, ich, flagMergeThr);
 
   ctx.stopTimer(RC_TIMER_RASTERIZE_TRIANGLES);
 end;
@@ -454,7 +454,7 @@ begin
     v1 := @verts[tris[i*3+1]*3];
     v2 := @verts[tris[i*3+2]*3];
     // Rasterize.
-    rasterizeTri(v0, v1, v2, areas[i], solid, @solid.bmin, @solid.bmax, solid.cs, ics, ich, flagMergeThr);
+    rasterizeTri(v0, v1, v2, areas[i], solid, @solid.bmin[0], @solid.bmax[0], solid.cs, ics, ich, flagMergeThr);
   end;
 
   ctx.stopTimer(RC_TIMER_RASTERIZE_TRIANGLES);
@@ -483,7 +483,7 @@ begin
     v1 := @verts[tris[i*3+1]*3];
     v2 := @verts[tris[i*3+2]*3];
     // Rasterize.
-    rasterizeTri(v0, v1, v2, areas[i], solid, @solid.bmin, @solid.bmax, solid.cs, ics, ich, flagMergeThr);
+    rasterizeTri(v0, v1, v2, areas[i], solid, @solid.bmin[0], @solid.bmax[0], solid.cs, ics, ich, flagMergeThr);
   end;
 
   ctx.stopTimer(RC_TIMER_RASTERIZE_TRIANGLES);
@@ -511,7 +511,7 @@ begin
     v1 := @verts[(i*3+1)*3];
     v2 := @verts[(i*3+2)*3];
     // Rasterize.
-    rasterizeTri(v0, v1, v2, areas[i], solid, @solid.bmin, @solid.bmax, solid.cs, ics, ich, flagMergeThr);
+    rasterizeTri(v0, v1, v2, areas[i], solid, @solid.bmin[0], @solid.bmax[0], solid.cs, ics, ich, flagMergeThr);
   end;
 
   ctx.stopTimer(RC_TIMER_RASTERIZE_TRIANGLES);
