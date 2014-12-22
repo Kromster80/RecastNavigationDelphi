@@ -260,13 +260,13 @@ function getSteerTarget(navQuery: TdtNavMeshQuery; startPos, endPos: PSingle;
                steerPos: PSingle; steerPosFlag: PByte; steerPosRef: PdtPolyRef;
                outPoints: PSingle = nil; outPointCount: PInteger = nil): Boolean;
 const MAX_STEER_POINTS = 3;
-var  steerPath: array [0..MAX_STEER_POINTS*3-1] of Single; steerPathFlags: array [0..MAX_STEER_POINTS-1] of Byte;
-  steerPathPolys: array [0..MAX_STEER_POINTS-1] of TdtPolyRef; nsteerPath,i,ns: Integer;
+var steerPath: array [0..MAX_STEER_POINTS*3-1] of Single; steerPathFlags: array [0..MAX_STEER_POINTS-1] of Byte;
+steerPathPolys: array [0..MAX_STEER_POINTS-1] of TdtPolyRef; nsteerPath,i,ns: Integer;
 begin
   // Find steer target.
   nsteerPath := 0;
   navQuery.findStraightPath(startPos, endPos, path, pathSize,
-                 @steerPath, @steerPathFlags, @steerPathPolys, @nsteerPath, MAX_STEER_POINTS);
+                 @steerPath[0], @steerPathFlags[0], @steerPathPolys[0], @nsteerPath, MAX_STEER_POINTS);
   if (nsteerPath = 0) then
     Exit(false);
 
@@ -413,7 +413,7 @@ begin
 
   if Sender = fFrame.btnSetRandomStart then
   begin
-    status := m_navQuery.findRandomPoint(m_filter, {frand,} @m_startRef, @m_spos);
+    status := m_navQuery.findRandomPoint(m_filter, {frand,} @m_startRef, @m_spos[0]);
     if (dtStatusSucceed(status)) then
     begin
       m_sposSet := true;
@@ -424,7 +424,7 @@ begin
   begin
     if (m_sposSet) then
     begin
-      status := m_navQuery.findRandomPointAroundCircle(m_startRef, @m_spos, m_randomRadius, m_filter, {frand,} @m_endRef, @m_epos);
+      status := m_navQuery.findRandomPointAroundCircle(m_startRef, @m_spos[0], m_randomRadius, m_filter, {frand,} @m_endRef, @m_epos[0]);
       if (dtStatusSucceed(status)) then
       begin
         m_eposSet := true;
@@ -439,10 +439,10 @@ begin
     m_nrandPoints := 0;
     for i := 0 to MAX_RAND_POINTS - 1 do
     begin
-      status := m_navQuery.findRandomPoint(m_filter, {frand,} @ref, @pt);
+      status := m_navQuery.findRandomPoint(m_filter, {frand,} @ref, @pt[0]);
       if (dtStatusSucceed(status)) then
       begin
-        dtVcopy(@m_randPoints[m_nrandPoints*3], @pt);
+        dtVcopy(@m_randPoints[m_nrandPoints*3], @pt[0]);
         Inc(m_nrandPoints);
       end;
     end;
@@ -455,10 +455,10 @@ begin
       m_randPointsInCircle := true;
       for i := 0 to MAX_RAND_POINTS - 1 do
       begin
-        status := m_navQuery.findRandomPointAroundCircle(m_startRef, @m_spos, m_randomRadius, m_filter, {frand,} @ref, @pt);
+        status := m_navQuery.findRandomPointAroundCircle(m_startRef, @m_spos[0], m_randomRadius, m_filter, {frand,} @ref, @pt[0]);
         if (dtStatusSucceed(status)) then
         begin
-          dtVcopy(@m_randPoints[m_nrandPoints*3], @pt);
+          dtVcopy(@m_randPoints[m_nrandPoints*3], @pt[0]);
           Inc(m_nrandPoints);
         end;
       end;
@@ -483,12 +483,12 @@ begin
   if (shift) then
   begin
     m_sposSet := true;
-    dtVcopy(@m_spos, p);
+    dtVcopy(@m_spos[0], p);
   end
   else
   begin
     m_eposSet := true;
-    dtVcopy(@m_epos, p);
+    dtVcopy(@m_epos[0], p);
   end;
   recalc();
 end;
@@ -513,7 +513,7 @@ begin
 
   if (m_pathIterNum = 0) then
   begin
-    m_navQuery.findPath(m_startRef, m_endRef, @m_spos, @m_epos, @m_filter, @m_polys, @m_npolys, MAX_POLYS);
+    m_navQuery.findPath(m_startRef, m_endRef, @m_spos[0], @m_epos[0], m_filter, @m_polys[0], @m_npolys, MAX_POLYS);
     m_nsmoothPath := 0;
 
     m_pathIterPolyCount := m_npolys;
@@ -523,17 +523,17 @@ begin
     if (m_pathIterPolyCount <> 0) then
     begin
       // Iterate over the path to find smooth path on the detail mesh surface.
-      m_navQuery.closestPointOnPoly(m_startRef, @m_spos, @m_iterPos, nil);
-      m_navQuery.closestPointOnPoly(m_pathIterPolys[m_pathIterPolyCount-1], @m_epos, @m_targetPos, nil);
+      m_navQuery.closestPointOnPoly(m_startRef, @m_spos[0], @m_iterPos[0], nil);
+      m_navQuery.closestPointOnPoly(m_pathIterPolys[m_pathIterPolyCount-1], @m_epos[0], @m_targetPos[0], nil);
 
       m_nsmoothPath := 0;
 
-      dtVcopy(@m_smoothPath[m_nsmoothPath*3], @m_iterPos);
+      dtVcopy(@m_smoothPath[m_nsmoothPath*3], @m_iterPos[0]);
       Inc(m_nsmoothPath);
     end;
   end;
 
-  dtVcopy(@m_prevIterPos, @m_iterPos);
+  dtVcopy(@m_prevIterPos[0], @m_iterPos[0]);
 
   Inc(m_pathIterNum);
 
@@ -548,51 +548,51 @@ begin
 
   // Find location to steer towards.
 
-  if (not getSteerTarget(m_navQuery, @m_iterPos, @m_targetPos, SLOP,
-            @m_pathIterPolys, m_pathIterPolyCount, @steerPos, @steerPosFlag, @steerPosRef,
-            @m_steerPoints, @m_steerPointCount)) then
+  if (not getSteerTarget(m_navQuery, @m_iterPos[0], @m_targetPos[0], SLOP,
+            @m_pathIterPolys[0], m_pathIterPolyCount, @steerPos[0], @steerPosFlag, @steerPosRef,
+            @m_steerPoints[0], @m_steerPointCount)) then
     Exit;
 
-  dtVcopy(@m_steerPos, @steerPos);
+  dtVcopy(@m_steerPos[0], @steerPos[0]);
 
   endOfPath := (steerPosFlag and Byte(DT_STRAIGHTPATH_END)) <> 0;
   offMeshConnection := (steerPosFlag and Byte(DT_STRAIGHTPATH_OFFMESH_CONNECTION)) <> 0;
 
   // Find movement delta.
-  dtVsub(@delta, @steerPos, @m_iterPos);
-  len := sqrt(dtVdot(@delta,@delta));
+  dtVsub(@delta[0], @steerPos[0], @m_iterPos[0]);
+  len := sqrt(dtVdot(@delta[0],@delta[0]));
   // If the steer target is end of path or off-mesh link, do not move past the location.
   if (endOfPath or offMeshConnection) and (len < STEP_SIZE) then
     len := 1
   else
     len := STEP_SIZE / len;
-  dtVmad(@moveTgt, @m_iterPos, @delta, len);
+  dtVmad(@moveTgt[0], @m_iterPos[0], @delta[0], len);
 
   // Move
   nvisited := 0;
-  m_navQuery.moveAlongSurface(m_pathIterPolys[0], @m_iterPos, @moveTgt, m_filter,
-                 @reslt, @visited, @nvisited, 16);
-  m_pathIterPolyCount := fixupCorridor(@m_pathIterPolys, m_pathIterPolyCount, MAX_POLYS, @visited, nvisited);
-  m_pathIterPolyCount := fixupShortcuts(@m_pathIterPolys, m_pathIterPolyCount, m_navQuery);
+  m_navQuery.moveAlongSurface(m_pathIterPolys[0], @m_iterPos[0], @moveTgt[0], m_filter,
+                 @reslt[0], @visited[0], @nvisited, 16);
+  m_pathIterPolyCount := fixupCorridor(@m_pathIterPolys[0], m_pathIterPolyCount, MAX_POLYS, @visited[0], nvisited);
+  m_pathIterPolyCount := fixupShortcuts(@m_pathIterPolys[0], m_pathIterPolyCount, m_navQuery);
 
   h := 0;
-  m_navQuery.getPolyHeight(m_pathIterPolys[0], @reslt, @h);
+  m_navQuery.getPolyHeight(m_pathIterPolys[0], @reslt[0], @h);
   reslt[1] := h;
-  dtVcopy(@m_iterPos, @reslt);
+  dtVcopy(@m_iterPos[0], @reslt[0]);
 
   // Handle end of path and off-mesh links when close enough.
-  if (endOfPath and inRange(@m_iterPos, @steerPos, SLOP, 1.0)) then
+  if (endOfPath and inRange(@m_iterPos[0], @steerPos[0], SLOP, 1.0)) then
   begin
     // Reached end of path.
-    dtVcopy(@m_iterPos, @m_targetPos);
+    dtVcopy(@m_iterPos[0], @m_targetPos[0]);
     if (m_nsmoothPath < MAX_SMOOTH) then
     begin
-      dtVcopy(@m_smoothPath[m_nsmoothPath*3], @m_iterPos);
+      dtVcopy(@m_smoothPath[m_nsmoothPath*3], @m_iterPos[0]);
       Inc(m_nsmoothPath);
     end;
     Exit;
   end
-  else if (offMeshConnection and inRange(@m_iterPos, @steerPos, SLOP, 1.0)) then
+  else if (offMeshConnection and inRange(@m_iterPos[0], @steerPos[0], SLOP, 1.0)) then
   begin
     // Reached off-mesh connection.
 
@@ -610,24 +610,24 @@ begin
     Dec(m_pathIterPolyCount, npos);
 
     // Handle the connection.
-    status := m_navMesh.getOffMeshConnectionPolyEndPoints(prevRef, polyRef, @startPos, @endPos);
+    status := m_navMesh.getOffMeshConnectionPolyEndPoints(prevRef, polyRef, @startPos[0], @endPos[0]);
     if (dtStatusSucceed(status)) then
     begin
       if (m_nsmoothPath < MAX_SMOOTH) then
       begin
-        dtVcopy(@m_smoothPath[m_nsmoothPath*3], @startPos);
+        dtVcopy(@m_smoothPath[m_nsmoothPath*3], @startPos[0]);
         Inc(m_nsmoothPath);
         // Hack to make the dotted path not visible during off-mesh connection.
         if (m_nsmoothPath and 1) <> 0 then
         begin
-          dtVcopy(@m_smoothPath[m_nsmoothPath*3], @startPos);
+          dtVcopy(@m_smoothPath[m_nsmoothPath*3], @startPos[0]);
           Inc(m_nsmoothPath);
         end;
       end;
       // Move position at the other side of the off-mesh link.
-      dtVcopy(@m_iterPos, @endPos);
+      dtVcopy(@m_iterPos[0], @endPos[0]);
       eh := 0.0;
-      m_navQuery.getPolyHeight(m_pathIterPolys[0], @m_iterPos, @eh);
+      m_navQuery.getPolyHeight(m_pathIterPolys[0], @m_iterPos[0], @eh);
       m_iterPos[1] := eh;
     end;
   end;
@@ -635,7 +635,7 @@ begin
   // Store results.
   if (m_nsmoothPath < MAX_SMOOTH) then
   begin
-    dtVcopy(@m_smoothPath[m_nsmoothPath*3], @m_iterPos);
+    dtVcopy(@m_smoothPath[m_nsmoothPath*3], @m_iterPos[0]);
     Inc(m_nsmoothPath);
   end;
 
@@ -652,19 +652,19 @@ begin
     end;
     if (dtStatusSucceed(m_pathFindStatus)) then
     begin
-      m_navQuery.finalizeSlicedFindPath(@m_polys, @m_npolys, MAX_POLYS);
+      m_navQuery.finalizeSlicedFindPath(@m_polys[0], @m_npolys, MAX_POLYS);
       m_nstraightPath := 0;
       if (m_npolys <> 0) then
       begin
         // In case of partial path, make sure the end point is clamped to the last polygon.
 
-        dtVcopy(@epos, @m_epos);
+        dtVcopy(@epos[0], @m_epos[0]);
         if (m_polys[m_npolys-1] <> m_endRef) then
-        m_navQuery.closestPointOnPoly(m_polys[m_npolys-1], @m_epos, @epos, nil);
+        m_navQuery.closestPointOnPoly(m_polys[m_npolys-1], @m_epos[0], @epos[0], nil);
 
-        m_navQuery.findStraightPath(@m_spos, @epos, @m_polys, m_npolys,
-                       @m_straightPath, @m_straightPathFlags,
-                       @m_straightPathPolys, @m_nstraightPath, MAX_POLYS, Byte(DT_STRAIGHTPATH_ALL_CROSSINGS));
+        m_navQuery.findStraightPath(@m_spos[0], @epos[0], @m_polys[0], m_npolys,
+                       @m_straightPath[0], @m_straightPathFlags[0],
+                       @m_straightPathPolys[0], @m_nstraightPath, MAX_POLYS, Byte(DT_STRAIGHTPATH_ALL_CROSSINGS));
       end;
 
       m_pathFindStatus := DT_FAILURE;
@@ -697,12 +697,12 @@ begin
     Exit;
 
   if (m_sposSet) then
-    m_navQuery.findNearestPoly(@m_spos, @m_polyPickExt, m_filter, @m_startRef, nil)
+    m_navQuery.findNearestPoly(@m_spos[0], @m_polyPickExt[0], m_filter, @m_startRef, nil)
   else
     m_startRef := 0;
 
   if (m_eposSet) then
-    m_navQuery.findNearestPoly(@m_epos, @m_polyPickExt, m_filter, @m_endRef, nil)
+    m_navQuery.findNearestPoly(@m_epos[0], @m_polyPickExt[0], m_filter, @m_endRef, nil)
   else
     m_endRef := 0;
 
@@ -719,7 +719,7 @@ begin
            m_filter.getIncludeFlags(), m_filter.getExcludeFlags());
 {$endif}
 
-      m_navQuery.findPath(m_startRef, m_endRef, @m_spos, @m_epos, m_filter, @m_polys, @m_npolys, MAX_POLYS);
+      m_navQuery.findPath(m_startRef, m_endRef, @m_spos[0], @m_epos[0], m_filter, @m_polys[0], @m_npolys, MAX_POLYS);
 
       m_nsmoothPath := 0;
 
@@ -729,12 +729,12 @@ begin
         Move(m_polys[0], polys[0], sizeof(TdtPolyRef)*m_npolys);
         npolys := m_npolys;
 
-        m_navQuery.closestPointOnPoly(m_startRef, @m_spos, @iterPos, nil);
-        m_navQuery.closestPointOnPoly(polys[npolys-1], @m_epos, @targetPos, nil);
+        m_navQuery.closestPointOnPoly(m_startRef, @m_spos[0], @iterPos[0], nil);
+        m_navQuery.closestPointOnPoly(polys[npolys-1], @m_epos[0], @targetPos[0], nil);
 
         m_nsmoothPath := 0;
 
-        dtVcopy(@m_smoothPath[m_nsmoothPath*3], @iterPos);
+        dtVcopy(@m_smoothPath[m_nsmoothPath*3], @iterPos[0]);
         Inc(m_nsmoothPath);
 
         // Move towards target a small advancement at a time until target reached or
@@ -742,50 +742,50 @@ begin
         while (npolys <> 0) and (m_nsmoothPath < MAX_SMOOTH) do
         begin
           // Find location to steer towards.
-          if (not getSteerTarget(m_navQuery, @iterPos, @targetPos, SLOP,
-                    @polys, npolys, @steerPos, @steerPosFlag, @steerPosRef)) then
+          if (not getSteerTarget(m_navQuery, @iterPos[0], @targetPos[0], SLOP,
+                    @polys[0], npolys, @steerPos[0], @steerPosFlag, @steerPosRef)) then
             break;
 
           endOfPath := (steerPosFlag and Byte(DT_STRAIGHTPATH_END)) <> 0;
           offMeshConnection := (steerPosFlag and Byte(DT_STRAIGHTPATH_OFFMESH_CONNECTION)) <> 0;
 
           // Find movement delta.
-          dtVsub(@delta, @steerPos, @iterPos);
-          len := Sqrt(dtVdot(@delta,@delta));
+          dtVsub(@delta[0], @steerPos[0], @iterPos[0]);
+          len := Sqrt(dtVdot(@delta[0],@delta[0]));
           // If the steer target is end of path or off-mesh link, do not move past the location.
           if (endOfPath or offMeshConnection) and (len < STEP_SIZE) then
             len := 1
           else
             len := STEP_SIZE / len;
 
-          dtVmad(@moveTgt, @iterPos, @delta, len);
+          dtVmad(@moveTgt[0], @iterPos[0], @delta[0], len);
 
           // Move
           nvisited := 0;
-          m_navQuery.moveAlongSurface(polys[0], @iterPos, @moveTgt, m_filter,
-                         @reslt, @visited, @nvisited, 16);
+          m_navQuery.moveAlongSurface(polys[0], @iterPos[0], @moveTgt[0], m_filter,
+                         @reslt[0], @visited[0], @nvisited, 16);
 
-          npolys := fixupCorridor(@polys, npolys, MAX_POLYS, @visited, nvisited);
-          npolys := fixupShortcuts(@polys, npolys, m_navQuery);
+          npolys := fixupCorridor(@polys[0], npolys, MAX_POLYS, @visited[0], nvisited);
+          npolys := fixupShortcuts(@polys[0], npolys, m_navQuery);
 
           h := 0;
-          m_navQuery.getPolyHeight(polys[0], @reslt, @h);
+          m_navQuery.getPolyHeight(polys[0], @reslt[0], @h);
           reslt[1] := h;
-          dtVcopy(@iterPos, @reslt);
+          dtVcopy(@iterPos[0], @reslt[0]);
 
           // Handle end of path and off-mesh links when close enough.
-          if (endOfPath and inRange(@iterPos, @steerPos, SLOP, 1.0)) then
+          if (endOfPath and inRange(@iterPos[0], @steerPos[0], SLOP, 1.0)) then
           begin
             // Reached end of path.
-            dtVcopy(@iterPos, @targetPos);
+            dtVcopy(@iterPos[0], @targetPos[0]);
             if (m_nsmoothPath < MAX_SMOOTH) then
             begin
-              dtVcopy(@m_smoothPath[m_nsmoothPath*3], @iterPos);
+              dtVcopy(@m_smoothPath[m_nsmoothPath*3], @iterPos[0]);
               Inc(m_nsmoothPath);
             end;
             break;
           end
-          else if (offMeshConnection and inRange(@iterPos, @steerPos, SLOP, 1.0)) then
+          else if (offMeshConnection and inRange(@iterPos[0], @steerPos[0], SLOP, 1.0)) then
           begin
             // Reached off-mesh connection.
 
@@ -803,24 +803,24 @@ begin
             Dec(npolys, npos);
 
             // Handle the connection.
-            status := m_navMesh.getOffMeshConnectionPolyEndPoints(prevRef, polyRef, @startPos, @endPos);
+            status := m_navMesh.getOffMeshConnectionPolyEndPoints(prevRef, polyRef, @startPos[0], @endPos[0]);
             if (dtStatusSucceed(status)) then
             begin
               if (m_nsmoothPath < MAX_SMOOTH) then
               begin
-                dtVcopy(@m_smoothPath[m_nsmoothPath*3], @startPos);
+                dtVcopy(@m_smoothPath[m_nsmoothPath*3], @startPos[0]);
                 Inc(m_nsmoothPath);
                 // Hack to make the dotted path not visible during off-mesh connection.
                 if (m_nsmoothPath and 1) <> 0 then
                 begin
-                  dtVcopy(@m_smoothPath[m_nsmoothPath*3], @startPos);
+                  dtVcopy(@m_smoothPath[m_nsmoothPath*3], @startPos[0]);
                   Inc(m_nsmoothPath);
                 end;
               end;
               // Move position at the other side of the off-mesh link.
-              dtVcopy(@iterPos, @endPos);
+              dtVcopy(@iterPos[0], @endPos[0]);
               eh := 0.0;
-              m_navQuery.getPolyHeight(polys[0], @iterPos, @eh);
+              m_navQuery.getPolyHeight(polys[0], @iterPos[0], @eh);
               iterPos[1] := eh;
             end;
           end;
@@ -828,7 +828,7 @@ begin
           // Store results.
           if (m_nsmoothPath < MAX_SMOOTH) then
           begin
-            dtVcopy(@m_smoothPath[m_nsmoothPath*3], @iterPos);
+            dtVcopy(@m_smoothPath[m_nsmoothPath*3], @iterPos[0]);
             Inc(m_nsmoothPath);
           end;
         end;
@@ -850,18 +850,18 @@ begin
            m_spos[0],m_spos[1],m_spos[2], m_epos[0],m_epos[1],m_epos[2],
            m_filter.getIncludeFlags(), m_filter.getExcludeFlags());
 {$endif}
-      m_navQuery.findPath(m_startRef, m_endRef, @m_spos, @m_epos, m_filter, @m_polys, @m_npolys, MAX_POLYS);
+      m_navQuery.findPath(m_startRef, m_endRef, @m_spos[0], @m_epos[0], m_filter, @m_polys[0], @m_npolys, MAX_POLYS);
       m_nstraightPath := 0;
       if (m_npolys <> 0) then
       begin
         // In case of partial path, make sure the end point is clamped to the last polygon.
-        dtVcopy(@epos, @m_epos);
+        dtVcopy(@epos[0], @m_epos[0]);
         if (m_polys[m_npolys-1] <> m_endRef) then
-          m_navQuery.closestPointOnPoly(m_polys[m_npolys-1], @m_epos, @epos, nil);
+          m_navQuery.closestPointOnPoly(m_polys[m_npolys-1], @m_epos[0], @epos[0], nil);
 
-        m_navQuery.findStraightPath(@m_spos, @epos, @m_polys, m_npolys,
-                       @m_straightPath, @m_straightPathFlags,
-                       @m_straightPathPolys, @m_nstraightPath, MAX_POLYS, Byte(m_straightPathOptions));
+        m_navQuery.findStraightPath(@m_spos[0], @epos[0], @m_polys[0], m_npolys,
+                       @m_straightPath[0], @m_straightPathFlags[0],
+                       @m_straightPathPolys[0], @m_nstraightPath, MAX_POLYS, Byte(m_straightPathOptions));
       end;
     end
     else
@@ -882,7 +882,7 @@ begin
       m_npolys := 0;
       m_nstraightPath := 0;
 
-      m_pathFindStatus := m_navQuery.initSlicedFindPath(m_startRef, m_endRef, @m_spos, @m_epos, m_filter, Byte(DT_FINDPATH_ANY_ANGLE));
+      m_pathFindStatus := m_navQuery.initSlicedFindPath(m_startRef, m_endRef, @m_spos[0], @m_epos[0], m_filter, Byte(DT_FINDPATH_ANY_ANGLE));
     end
     else
     begin
@@ -906,27 +906,27 @@ begin
       m_straightPath[0] := m_spos[0];
       m_straightPath[1] := m_spos[1];
       m_straightPath[2] := m_spos[2];
-      m_navQuery.raycast(m_startRef, @m_spos, @m_epos, m_filter, @t, @m_hitNormal, @m_polys, @m_npolys, MAX_POLYS);
+      m_navQuery.raycast(m_startRef, @m_spos[0], @m_epos[0], m_filter, @t, @m_hitNormal[0], @m_polys[0], @m_npolys, MAX_POLYS);
       if (t > 1) then
       begin
         // No hit
-        dtVcopy(@m_hitPos, @m_epos);
+        dtVcopy(@m_hitPos[0], @m_epos[0]);
         m_hitResult := false;
       end
       else
       begin
         // Hit
-        dtVlerp(@m_hitPos, @m_spos, @m_epos, t);
+        dtVlerp(@m_hitPos[0], @m_spos[0], @m_epos[0], t);
         m_hitResult := true;
       end;
       // Adjust height.
       if (m_npolys > 0) then
       begin
         h := 0;
-        m_navQuery.getPolyHeight(m_polys[m_npolys-1], @m_hitPos, @h);
+        m_navQuery.getPolyHeight(m_polys[m_npolys-1], @m_hitPos[0], @h);
         m_hitPos[1] := h;
       end;
-      dtVcopy(@m_straightPath[3], @m_hitPos);
+      dtVcopy(@m_straightPath[3], @m_hitPos[0]);
     end;
   end
   else if (m_toolMode = TOOLMODE_DISTANCE_TO_WALL) then
@@ -940,7 +940,7 @@ begin
            m_filter.getIncludeFlags(), m_filter.getExcludeFlags());
 {$endif}
       m_distanceToWall := 0.0;
-      m_navQuery.findDistanceToWall(m_startRef, @m_spos, 100.0, m_filter, @m_distanceToWall, @m_hitPos, @m_hitNormal);
+      m_navQuery.findDistanceToWall(m_startRef, @m_spos[0], 100.0, m_filter, @m_distanceToWall, @m_hitPos[0], @m_hitNormal[0]);
     end;
   end
   else if (m_toolMode = TOOLMODE_FIND_POLYS_IN_CIRCLE) then
@@ -955,8 +955,8 @@ begin
            m_spos[0],m_spos[1],m_spos[2], dist,
            m_filter.getIncludeFlags(), m_filter.getExcludeFlags());
 {$endif}
-      m_navQuery.findPolysAroundCircle(m_startRef, @m_spos, dist, m_filter,
-                        @m_polys, @m_parent, nil, @m_npolys, MAX_POLYS);
+      m_navQuery.findPolysAroundCircle(m_startRef, @m_spos[0], dist, m_filter,
+                        @m_polys[0], @m_parent[0], nil, @m_npolys, MAX_POLYS);
 
     end;
   end
@@ -992,8 +992,8 @@ begin
            m_queryPoly[9],m_queryPoly[10],m_queryPoly[11],
            m_filter.getIncludeFlags(), m_filter.getExcludeFlags());
 {$endif}
-      m_navQuery.findPolysAroundShape(m_startRef, @m_queryPoly, 4, m_filter,
-                       @m_polys, @m_parent, nil, @m_npolys, MAX_POLYS);
+      m_navQuery.findPolysAroundShape(m_startRef, @m_queryPoly[0], 4, m_filter,
+                       @m_polys[0], @m_parent[0], nil, @m_npolys, MAX_POLYS);
     end;
   end
   else if (m_toolMode = TOOLMODE_FIND_LOCAL_NEIGHBOURHOOD) then
@@ -1060,9 +1060,9 @@ begin
 
   dd.depthMask(false);
   if (m_sposSet) then
-    drawAgent(@m_spos, agentRadius, agentHeight, agentClimb, startCol);
+    drawAgent(@m_spos[0], agentRadius, agentHeight, agentClimb, startCol);
   if (m_eposSet) then
-    drawAgent(@m_epos, agentRadius, agentHeight, agentClimb, endCol);
+    drawAgent(@m_epos[0], agentRadius, agentHeight, agentClimb, endCol);
   dd.depthMask(true);
 
   if (m_navMesh = nil) then
@@ -1235,8 +1235,8 @@ begin
       if (m_parent[i] <> 0) then
       begin
         dd.depthMask(false);
-        getPolyCenter(m_navMesh, m_parent[i], @p0);
-        getPolyCenter(m_navMesh, m_polys[i], @p1);
+        getPolyCenter(m_navMesh, m_parent[i], @p0[0]);
+        getPolyCenter(m_navMesh, m_polys[i], @p1[0]);
         duDebugDrawArc(dd, p0[0],p0[1],p0[2], p1[0],p1[1],p1[2], 0.25, 0.0, 0.4, duRGBA(0,0,0,128), 2.0);
         dd.depthMask(true);
       end;
@@ -1262,8 +1262,8 @@ begin
       if (m_parent[i] <> 0) then
       begin
         dd.depthMask(false);
-        getPolyCenter(m_navMesh, m_parent[i], @p0);
-        getPolyCenter(m_navMesh, m_polys[i], @p1);
+        getPolyCenter(m_navMesh, m_parent[i], @p0[0]);
+        getPolyCenter(m_navMesh, m_polys[i], @p1[0]);
         duDebugDrawArc(dd, p0[0],p0[1],p0[2], p1[0],p1[1],p1[2], 0.25, 0.0, 0.4, duRGBA(0,0,0,128), 2.0);
         dd.depthMask(true);
       end;
@@ -1296,32 +1296,32 @@ begin
       if (m_parent[i] <> 0) then
       begin
         dd.depthMask(false);
-        getPolyCenter(m_navMesh, m_parent[i], @p0);
-        getPolyCenter(m_navMesh, m_polys[i], @p1);
+        getPolyCenter(m_navMesh, m_parent[i], @p0[0]);
+        getPolyCenter(m_navMesh, m_polys[i], @p1[0]);
         duDebugDrawArc(dd, p0[0],p0[1],p0[2], p1[0],p1[1],p1[2], 0.25, 0.0, 0.4, duRGBA(0,0,0,128), 2.0);
         dd.depthMask(true);
       end;
 
       FillChar(refs[0], sizeof(TdtPolyRef)*MAX_SEGS, 0);
       nsegs := 0;
-      m_navQuery.getPolyWallSegments(m_polys[i], m_filter, @segs, @refs, @nsegs, MAX_SEGS);
+      m_navQuery.getPolyWallSegments(m_polys[i], m_filter, @segs[0], @refs[0], @nsegs, MAX_SEGS);
       dd.&begin(DU_DRAW_LINES, 2.0);
       for j := 0 to nsegs - 1 do
       begin
         s := @segs[j*6];
 
         // Skip too distant segments.
-        distSqr := dtDistancePtSegSqr2D(@m_spos, s, s+3, @tseg);
+        distSqr := dtDistancePtSegSqr2D(@m_spos[0], s, s+3, @tseg);
         if (distSqr > Sqr(m_neighbourhoodRadius)) then
           continue;
 
-        dtVsub(@delta, s+3,s);
-        dtVmad(@p0, s, @delta, 0.5);
+        dtVsub(@delta[0], s+3,s);
+        dtVmad(@p0[0], s, @delta[0], 0.5);
         norm[0] := delta[2];
         norm[1] := 0;
         norm[2] := -delta[0];
-        dtVnormalize(@norm);
-        dtVmad(@p1, @p0, @norm, agentRadius*0.5);
+        dtVnormalize(@norm[0]);
+        dtVmad(@p1[0], @p0[0], @norm[0], agentRadius*0.5);
 
         // Skip backfacing segments.
         if (refs[j] <> 0) then
@@ -1333,7 +1333,7 @@ begin
         else
         begin
           col := duRGBA(192,32,16,192);
-          if (dtTriArea2D(@m_spos, s, s+3) < 0.0) then
+          if (dtTriArea2D(@m_spos[0], s, s+3) < 0.0) then
             col := duRGBA(96,32,16,192);
 
           dd.vertex(p0[0],p0[1]+agentClimb,p0[2],col);
