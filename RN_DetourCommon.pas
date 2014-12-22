@@ -682,11 +682,11 @@ procedure dtClosestPtPointTriangle(closest, p, a, b, c: PSingle);
 var ab,ac,ap,bp,cp: array [0..2] of Single; d1,d2,d3,d4,vc,v,d5,d6,vb,w,va,denom: Single;
 begin
   // Check if P in vertex region outside A
-  dtVsub(@ab, b, a);
-  dtVsub(@ac, c, a);
-  dtVsub(@ap, p, a);
-  d1 := dtVdot(@ab, @ap);
-  d2 := dtVdot(@ac, @ap);
+  dtVsub(@ab[0], b, a);
+  dtVsub(@ac[0], c, a);
+  dtVsub(@ap[0], p, a);
+  d1 := dtVdot(@ab[0], @ap[0]);
+  d2 := dtVdot(@ac[0], @ap[0]);
   if (d1 <= 0.0) and (d2 <= 0.0) then
   begin
     // barycentric coordinates (1,0,0)
@@ -695,9 +695,9 @@ begin
   end;
 
   // Check if P in vertex region outside B
-  dtVsub(@bp, p, b);
-  d3 := dtVdot(@ab, @bp);
-  d4 := dtVdot(@ac, @bp);
+  dtVsub(@bp[0], p, b);
+  d3 := dtVdot(@ab[0], @bp[0]);
+  d4 := dtVdot(@ac[0], @bp[0]);
   if (d3 >= 0.0) and (d4 <= d3) then
   begin
     // barycentric coordinates (0,1,0)
@@ -718,9 +718,9 @@ begin
   end;
 
   // Check if P in vertex region outside C
-  dtVsub(@cp, p, c);
-  d5 := dtVdot(@ab, @cp);
-  d6 := dtVdot(@ac, @cp);
+  dtVsub(@cp[0], p, c);
+  d5 := dtVdot(@ab[0], @cp[0]);
+  d6 := dtVdot(@ac[0], @cp[0]);
   if (d6 >= 0.0) and (d5 <= d6) then
   begin
     // barycentric coordinates (0,0,1)
@@ -770,15 +770,15 @@ begin
   segMin^ := -1;
   segMax^ := -1;
 
-  dtVsub(@dir, p1, p0);
+  dtVsub(@dir[0], p1, p0);
 
   i := 0; j := nverts-1;
   while (i < nverts) do
   begin
-    dtVsub(@edge, @verts[i*3], @verts[j*3]);
-    dtVsub(@diff, p0, @verts[j*3]);
-    n := dtVperp2D(@edge, @diff);
-    d := dtVperp2D(@dir, @edge);
+    dtVsub(@edge[0], @verts[i*3], @verts[j*3]);
+    dtVsub(@diff[0], p0, @verts[j*3]);
+    n := dtVperp2D(@edge[0], @diff[0]);
+    d := dtVperp2D(@dir[0], @edge[0]);
     if (Abs(d) < EPS) then
     begin
       // S is nearly parallel to this edge
@@ -860,15 +860,15 @@ function dtClosestHeightPointTriangle(p, a, b, c: PSingle; h: PSingle): Boolean;
 const EPS = 0.0001;
 var v0,v1,v2: array [0..2] of Single; dot00,dot01,dot02,dot11,dot12: Single; invDenom,u,v: Single;
 begin
-  dtVsub(@v0, c,a);
-  dtVsub(@v1, b,a);
-  dtVsub(@v2, p,a);
+  dtVsub(@v0[0], c,a);
+  dtVsub(@v1[0], b,a);
+  dtVsub(@v2[0], p,a);
 
-  dot00 := dtVdot2D(@v0, @v0);
-  dot01 := dtVdot2D(@v0, @v1);
-  dot02 := dtVdot2D(@v0, @v2);
-  dot11 := dtVdot2D(@v1, @v1);
-  dot12 := dtVdot2D(@v1, @v2);
+  dot00 := dtVdot2D(@v0[0], @v0[0]);
+  dot01 := dtVdot2D(@v0[0], @v1[0]);
+  dot02 := dtVdot2D(@v0[0], @v2[0]);
+  dot11 := dtVdot2D(@v1[0], @v1[0]);
+  dot12 := dtVdot2D(@v1[0], @v2[0]);
 
   // Compute barycentric coordinates
   invDenom := 1.0 / (dot00 * dot11 - dot01 * dot01);
@@ -965,8 +965,8 @@ begin
     vb := @polya[i*3];
     n[0] := vb[2]-va[2]; n[1] := 0; n[2] := -(vb[0]-va[0]);
 
-    projectPoly(@n, polya, npolya, @amin, @amax);
-    projectPoly(@n, polyb, npolyb, @bmin, @bmax);
+    projectPoly(@n[0], polya, npolya, @amin, @amax);
+    projectPoly(@n[0], polyb, npolyb, @bmin, @bmax);
     if (not overlapRange(amin, amax, bmin, bmax, eps)) then
     begin
       // Found separating axis
@@ -984,8 +984,8 @@ begin
     vb := @polyb[i*3];
     n[0] := vb[2]-va[2]; n[1] := 0; n[2] := -(vb[0]-va[0]);
 
-    projectPoly(@n, polya, npolya, @amin, @amax);
-    projectPoly(@n, polyb, npolyb, @bmin, @bmax);
+    projectPoly(@n[0], polya, npolya, @amin, @amax);
+    projectPoly(@n[0], polyb, npolyb, @bmin, @bmax);
     if (not overlapRange(amin, amax, bmin, bmax, eps)) then
     begin
       // Found separating axis
@@ -1047,13 +1047,13 @@ function vperpXZ(a, b: PSingle): Single; begin Result := a[0]*b[2] - a[2]*b[0]; 
 function dtIntersectSegSeg2D(ap, aq, bp, bq: PSingle; s, t: PSingle): Boolean;
 var u,v,w: array [0..2] of Single; d: Single;
 begin
-  dtVsub(@u,aq,ap);
-  dtVsub(@v,bq,bp);
-  dtVsub(@w,ap,bp);
-  d := vperpXZ(@u,@v);
+  dtVsub(@u[0],aq,ap);
+  dtVsub(@v[0],bq,bp);
+  dtVsub(@w[0],ap,bp);
+  d := vperpXZ(@u[0],@v[0]);
   if (Abs(d) < 0.000001) then Exit(false);
-  s^ := vperpXZ(@v,@w) / d;
-  t^ := vperpXZ(@u,@w) / d;
+  s^ := vperpXZ(@v[0],@w[0]) / d;
+  t^ := vperpXZ(@u[0],@w[0]) / d;
   Result := true;
 end;
 
