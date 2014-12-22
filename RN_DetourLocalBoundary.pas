@@ -68,7 +68,7 @@ constructor TdtLocalBoundary.Create;
 begin
   inherited;
 
-	dtVset(@m_center, MaxSingle,MaxSingle,MaxSingle);
+	dtVset(@m_center[0], MaxSingle,MaxSingle,MaxSingle);
 end;
 
 destructor TdtLocalBoundary.Destroy;
@@ -78,7 +78,7 @@ end;
 
 procedure TdtLocalBoundary.reset();
 begin
-	dtVset(@m_center, MaxSingle,MaxSingle,MaxSingle);
+	dtVset(@m_center[0], MaxSingle,MaxSingle,MaxSingle);
 	m_npolys := 0;
 	m_nsegs := 0;
 end;
@@ -130,24 +130,24 @@ begin
 
 	if (ref = 0) then
 	begin
-		dtVset(@m_center, MaxSingle,MaxSingle,MaxSingle);
+		dtVset(@m_center[0], MaxSingle,MaxSingle,MaxSingle);
 		m_nsegs := 0;
 		m_npolys := 0;
 		Exit;
 	end;
 
-	dtVcopy(@m_center, pos);
+	dtVcopy(@m_center[0], pos);
 
 	// First query non-overlapping polygons.
 	navquery.findLocalNeighbourhood(ref, pos, collisionQueryRange,
-									 filter, @m_polys, nil, @m_npolys, MAX_LOCAL_POLYS);
+									 filter, @m_polys[0], nil, @m_npolys, MAX_LOCAL_POLYS);
 
 	// Secondly, store all polygon edges.
 	m_nsegs := 0;
 	nsegs := 0;
 	for j := 0 to m_npolys - 1 do
 	begin
-		navquery.getPolyWallSegments(m_polys[j], filter, @segs, nil, @nsegs, MAX_SEGS_PER_POLY);
+		navquery.getPolyWallSegments(m_polys[j], filter, @segs[0], nil, @nsegs, MAX_SEGS_PER_POLY);
 		for k := 0 to nsegs - 1 do
 		begin
 			s := @segs[k*6];
@@ -176,8 +176,8 @@ begin
 	Result := true;
 end;
 
-function TdtLocalBoundary.getCenter(): PSingle; begin Result := @m_center; end;
+function TdtLocalBoundary.getCenter(): PSingle; begin Result := @m_center[0]; end;
 function TdtLocalBoundary.getSegmentCount(): Integer; begin Result := m_nsegs; end;
-function TdtLocalBoundary.getSegment(i: Integer): PSingle; begin Result := @m_segs[i].s; end;
+function TdtLocalBoundary.getSegment(i: Integer): PSingle; begin Result := @m_segs[i].s[0]; end;
 
 end.

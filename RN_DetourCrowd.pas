@@ -474,17 +474,17 @@ var maxDelta, ds: Single; dv: array [0..2] of Single;
 begin
 	// Fake dynamic constraint.
 	maxDelta := ag.params.maxAcceleration * dt;
-	dtVsub(@dv, @ag.nvel, @ag.vel);
-	ds := dtVlen(@dv);
+	dtVsub(@dv[0], @ag.nvel[0], @ag.vel[0]);
+	ds := dtVlen(@dv[0]);
 	if (ds > maxDelta) then
-		dtVscale(@dv, @dv, maxDelta/ds);
-	dtVadd(@ag.vel, @ag.vel, @dv);
+		dtVscale(@dv[0], @dv[0], maxDelta/ds);
+	dtVadd(@ag.vel[0], @ag.vel[0], @dv[0]);
 
 	// Integrate
-	if (dtVlen(@ag.vel) > 0.0001) then
-		dtVmad(@ag.npos, @ag.npos, @ag.vel, dt)
+	if (dtVlen(@ag.vel[0]) > 0.0001) then
+		dtVmad(@ag.npos[0], @ag.npos[0], @ag.vel[0], dt)
 	else
-		dtVset(@ag.vel,0,0,0);
+		dtVset(@ag.vel[0],0,0,0);
 end;
 
 function overOffmeshConnection(const ag: PdtCrowdAgent; const radius: Single): Boolean;
@@ -496,7 +496,7 @@ begin
 	offMeshConnection := (ag.cornerFlags[ag.ncorners-1] and Byte(DT_STRAIGHTPATH_OFFMESH_CONNECTION)) <> 0;
 	if (offMeshConnection) then
 	begin
-		distSq := dtVdist2DSqr(@ag.npos, @ag.cornerVerts[(ag.ncorners-1)*3]);
+		distSq := dtVdist2DSqr(@ag.npos[0], @ag.cornerVerts[(ag.ncorners-1)*3]);
 		if (distSq < radius*radius) then
 			Exit(true);
 	end;
@@ -512,7 +512,7 @@ begin
 
 	endOfPath := (ag.cornerFlags[ag.ncorners-1] and Byte(DT_STRAIGHTPATH_END)) <> 0;
 	if (endOfPath) then
-		Exit(dtMin(dtVdist2D(@ag.npos, @ag.cornerVerts[(ag.ncorners-1)*3]), range));
+		Exit(dtMin(dtVdist2D(@ag.npos[0], @ag.cornerVerts[(ag.ncorners-1)*3]), range));
 
 	Result := range;
 end;
@@ -531,15 +531,15 @@ begin
 	p0 := @ag.cornerVerts[ip0*3];
 	p1 := @ag.cornerVerts[ip1*3];
 
-	dtVsub(@dir0, p0, @ag.npos);
-	dtVsub(@dir1, p1, @ag.npos);
+	dtVsub(@dir0[0], p0, @ag.npos[0]);
+	dtVsub(@dir1[0], p1, @ag.npos[0]);
 	dir0[1] := 0;
 	dir1[1] := 0;
 
-	len0 := dtVlen(@dir0);
-	len1 := dtVlen(@dir1);
+	len0 := dtVlen(@dir0[0]);
+	len1 := dtVlen(@dir1[0]);
 	if (len1 > 0.001) then
-		dtVscale(@dir1,@dir1,1.0/len1);
+		dtVscale(@dir1[0],@dir1[0],1.0/len1);
 	
 	dir[0] := dir0[0] - dir1[0]*len0*0.5;
 	dir[1] := 0;
@@ -555,7 +555,7 @@ begin
 		dtVset(dir, 0,0,0);
 		Exit;
 	end;
-	dtVsub(dir, @ag.cornerVerts[0], @ag.npos);
+	dtVsub(dir, @ag.cornerVerts[0], @ag.npos[0]);
 	dir[1] := 0;
 	dtVnormalize(dir);
 end;
@@ -610,7 +610,7 @@ begin
 
 	nids := grid.queryItems(pos[0]-range, pos[2]-range,
 								pos[0]+range, pos[2]+range,
-								@ids, MAX_NEIS);
+								@ids[0], MAX_NEIS);
 
 	for i := 0 to nids - 1 do
 	begin
@@ -619,11 +619,11 @@ begin
 		if (ag = skip) then continue;
 
 		// Check for overlap.
-		dtVsub(@diff, pos, @ag.npos);
+		dtVsub(@diff[0], pos, @ag.npos[0]);
 		if (Abs(diff[1]) >= (height+ag.params.height)/2.0) then
 			continue;
 		diff[1] := 0;
-		distSqr := dtVlenSqr(@diff);
+		distSqr := dtVlenSqr(@diff[0]);
 		if (distSqr > Sqr(range)) then
 			continue;
 
@@ -817,7 +817,7 @@ begin
 	m_maxAgents := maxAgents;
 	m_maxAgentRadius := maxAgentRadius;
 
-	dtVset(@m_ext, m_maxAgentRadius*2.0,m_maxAgentRadius*1.5,m_maxAgentRadius*2.0);
+	dtVset(@m_ext[0], m_maxAgentRadius*2.0,m_maxAgentRadius*1.5,m_maxAgentRadius*2.0);
 
 	m_grid := dtAllocProximityGrid();
 	if (m_grid = nil) then
@@ -883,7 +883,7 @@ begin
 
 	if (dtStatusFailed(m_navquery.init(nav, MAX_COMMON_NODES))) then
 		Exit(false);
-	
+
 	Result := true;
 end;
 
@@ -956,15 +956,15 @@ begin
 
 	// Find nearest position on navmesh and place the agent there.
 	ref := 0;
-	dtVcopy(@nearest, pos);
-	status := m_navquery.findNearestPoly(pos, @m_ext, m_filters[ag.params.queryFilterType], @ref, @nearest);
+	dtVcopy(@nearest[0], pos);
+	status := m_navquery.findNearestPoly(pos, @m_ext[0], m_filters[ag.params.queryFilterType], @ref, @nearest[0]);
 	if (dtStatusFailed(status)) then
 	begin
-		dtVcopy(@nearest, pos);
+		dtVcopy(@nearest[0], pos);
 		ref := 0;
 	end;
 	
-	ag.corridor.reset(ref, @nearest);
+	ag.corridor.reset(ref, @nearest[0]);
 	ag.boundary.reset();
 	ag.partial := false;
 
@@ -972,10 +972,10 @@ begin
 	ag.targetReplanTime := 0;
 	ag.nneis := 0;
 	
-	dtVset(@ag.dvel, 0,0,0);
-	dtVset(@ag.nvel, 0,0,0);
-	dtVset(@ag.vel, 0,0,0);
-	dtVcopy(@ag.npos, @nearest);
+	dtVset(@ag.dvel[0], 0,0,0);
+	dtVset(@ag.nvel[0], 0,0,0);
+	dtVset(@ag.vel[0], 0,0,0);
+	dtVcopy(@ag.npos[0], @nearest[0]);
 
 	ag.desiredSpeed := 0;
 
@@ -1013,7 +1013,7 @@ begin
 
 	// Initialize request.
 	ag.targetRef := ref;
-	dtVcopy(@ag.targetPos, pos);
+	dtVcopy(@ag.targetPos[0], pos);
 	ag.targetPathqRef := DT_PATHQ_INVALID;
 	ag.targetReplan := true;
 	if (ag.targetRef <> 0) then
@@ -1043,7 +1043,7 @@ begin
 	
 	// Initialize request.
 	ag.targetRef := ref;
-	dtVcopy(@ag.targetPos, pos);
+	dtVcopy(@ag.targetPos[0], pos);
 	ag.targetPathqRef := DT_PATHQ_INVALID;
 	ag.targetReplan := false;
 	if (ag.targetRef <> 0) then
@@ -1064,7 +1064,7 @@ begin
 	
 	// Initialize request.
 	ag.targetRef := 0;
-	dtVcopy(@ag.targetPos, vel);
+	dtVcopy(@ag.targetPos[0], vel);
 	ag.targetPathqRef := DT_PATHQ_INVALID;
 	ag.targetReplan := false;
 	ag.targetState := DT_CROWDAGENT_TARGET_VELOCITY;
@@ -1082,7 +1082,7 @@ begin
 	
 	// Initialize request.
 	ag.targetRef := 0;
-	dtVset(@ag.targetPos, 0,0,0);
+	dtVset(@ag.targetPos[0], 0,0,0);
 	ag.targetPathqRef := DT_PATHQ_INVALID;
 	ag.targetReplan := false;
 	ag.targetState := DT_CROWDAGENT_TARGET_NONE;
@@ -1137,18 +1137,18 @@ begin
 			reqPathCount := 0;
 
 			// Quick search towards the goal.
-			m_navquery.initSlicedFindPath(path[0], ag.targetRef, @ag.npos, @ag.targetPos, m_filters[ag.params.queryFilterType]);
+			m_navquery.initSlicedFindPath(path[0], ag.targetRef, @ag.npos[0], @ag.targetPos[0], m_filters[ag.params.queryFilterType]);
 			m_navquery.updateSlicedFindPath(MAX_ITER, nil);
 
 			if (ag.targetReplan) then // && npath > 10)
 			begin
 				// Try to use existing steady path during replan if possible.
-				status := m_navquery.finalizeSlicedFindPathPartial(path, npath, @reqPath, @reqPathCount, MAX_RES);
+				status := m_navquery.finalizeSlicedFindPathPartial(path, npath, @reqPath[0], @reqPathCount, MAX_RES);
 			end
 			else
 			begin
 				// Try to move towards target when goal changes.
-				status := m_navquery.finalizeSlicedFindPath(@reqPath, @reqPathCount, MAX_RES);
+				status := m_navquery.finalizeSlicedFindPath(@reqPath[0], @reqPathCount, MAX_RES);
 			end;
 
 			if (not dtStatusFailed(status)) and (reqPathCount > 0) then
@@ -1157,13 +1157,13 @@ begin
 				if (reqPath[reqPathCount-1] <> ag.targetRef) then
 				begin
 					// Partial path, constrain target position inside the last polygon.
-					status := m_navquery.closestPointOnPoly(reqPath[reqPathCount-1], @ag.targetPos, @reqPos, nil);
+					status := m_navquery.closestPointOnPoly(reqPath[reqPathCount-1], @ag.targetPos[0], @reqPos[0], nil);
 					if (dtStatusFailed(status)) then
 						reqPathCount := 0;
 				end
 				else
 				begin
-					dtVcopy(@reqPos, @ag.targetPos);
+					dtVcopy(@reqPos[0], @ag.targetPos[0]);
 				end;
 			end
 			else
@@ -1174,12 +1174,12 @@ begin
 			if (reqPathCount = 0) then
 			begin
 				// Could not find path, start the request from current location.
-				dtVcopy(@reqPos, @ag.npos);
+				dtVcopy(@reqPos[0], @ag.npos[0]);
 				reqPath[0] := path[0];
 				reqPathCount := 1;
 			end;
 
-			ag.corridor.setCorridor(@reqPos, @reqPath, reqPathCount);
+			ag.corridor.setCorridor(@reqPos[0], @reqPath[0], reqPathCount);
 			ag.boundary.reset();
 			ag.partial := false;
 
@@ -1197,7 +1197,7 @@ begin
 
 		if (ag.targetState = DT_CROWDAGENT_TARGET_WAITING_FOR_QUEUE) then
 		begin
-			nqueue := addToPathQueue(ag, @queue, nqueue, PATH_MAX_AGENTS);
+			nqueue := addToPathQueue(ag, @queue[0], nqueue, PATH_MAX_AGENTS);
 		end;
 	end;
 
@@ -1205,7 +1205,7 @@ begin
 	begin
 		ag := queue[i];
 		ag.targetPathqRef := m_pathq.request(ag.corridor.getLastPoly(), ag.targetRef,
-											 ag.corridor.getTarget(), @ag.targetPos, m_filters[ag.params.queryFilterType]);
+											 ag.corridor.getTarget(), @ag.targetPos[0], m_filters[ag.params.queryFilterType]);
 		if (ag.targetPathqRef <> DT_PATHQ_INVALID) then
 			ag.targetState := DT_CROWDAGENT_TARGET_WAITING_FOR_PATH;
 	end;
@@ -1244,7 +1244,7 @@ begin
 				Assert(npath <> 0);
 
 				// Apply results.
-				dtVcopy(@targetPos, @ag.targetPos);
+				dtVcopy(@targetPos[0], @ag.targetPos[0]);
 
 				res := m_pathResult;
 				valid := true;
@@ -1305,9 +1305,9 @@ begin
 					if (res[nres-1] <> ag.targetRef) then
 					begin
 						// Partial path, constrain target position inside the last polygon.
-						status := m_navquery.closestPointOnPoly(res[nres-1], @targetPos, @nearest, nil);
+						status := m_navquery.closestPointOnPoly(res[nres-1], @targetPos[0], @nearest[0], nil);
 						if (dtStatusSucceed(status)) then
-							dtVcopy(@targetPos, @nearest)
+							dtVcopy(@targetPos[0], @nearest[0])
 						else
 							valid := false;
 					end;
@@ -1316,7 +1316,7 @@ begin
 				if (valid) then
 				begin
 					// Set current corridor.
-					ag.corridor.setCorridor(@targetPos, res, nres);
+					ag.corridor.setCorridor(@targetPos[0], res, nres);
 					// Force to update boundary.
 					ag.boundary.reset();
 					ag.targetState := DT_CROWDAGENT_TARGET_VALID;
@@ -1356,7 +1356,7 @@ begin
 			continue;
 		ag.topologyOptTime := ag.topologyOptTime + dt;
 		if (ag.topologyOptTime >= OPT_TIME_THR) then
-			nqueue := addToOptQueue(ag, @queue, nqueue, OPT_MAX_AGENTS);
+			nqueue := addToOptQueue(ag, @queue[0], nqueue, OPT_MAX_AGENTS);
 	end;
 
 	for i := 0 to nqueue - 1 do
@@ -1388,20 +1388,20 @@ begin
 		// First check that the current location is valid.
 		idx := getAgentIndex(ag);
 		agentRef := ag.corridor.getFirstPoly();
-		dtVcopy(@agentPos, @ag.npos);
+		dtVcopy(@agentPos[0], @ag.npos[0]);
 		if (not m_navquery.isValidPolyRef(agentRef, m_filters[ag.params.queryFilterType])) then
 		begin
 			// Current location is not valid, try to reposition.
 			// TODO: this can snap agents, how to handle that?
-			dtVcopy(@nearest, @agentPos);
+			dtVcopy(@nearest[0], @agentPos[0]);
 			agentRef := 0;
-			m_navquery.findNearestPoly(@ag.npos, @m_ext, m_filters[ag.params.queryFilterType], @agentRef, @nearest);
-			dtVcopy(@agentPos, @nearest);
+			m_navquery.findNearestPoly(@ag.npos[0], @m_ext[0], m_filters[ag.params.queryFilterType], @agentRef, @nearest[0]);
+			dtVcopy(@agentPos[0], @nearest[0]);
 
 			if (agentRef = 0) then
 			begin
 				// Could not find location in navmesh, set state to invalid.
-				ag.corridor.reset(0, @agentPos);
+				ag.corridor.reset(0, @agentPos[0]);
 				ag.partial := false;
 				ag.boundary.reset();
 				ag.state := DT_CROWDAGENT_STATE_INVALID;
@@ -1410,10 +1410,10 @@ begin
 
 			// Make sure the first polygon is valid, but leave other valid
 			// polygons in the path so that replanner can adjust the path better.
-			ag.corridor.fixPathStart(agentRef, @agentPos);
+			ag.corridor.fixPathStart(agentRef, @agentPos[0]);
 //			ag.corridor.trimInvalidPath(agentRef, agentPos, m_navquery, &m_filter);
 			ag.boundary.reset();
-			dtVcopy(@ag.npos, @agentPos);
+			dtVcopy(@ag.npos[0], @agentPos[0]);
 
 			replan := true;
 		end;
@@ -1428,16 +1428,16 @@ begin
 			if (not m_navquery.isValidPolyRef(ag.targetRef, m_filters[ag.params.queryFilterType])) then
 			begin
 				// Current target is not valid, try to reposition.
-				dtVcopy(@nearest, @ag.targetPos);
+				dtVcopy(@nearest[0], @ag.targetPos[0]);
 				ag.targetRef := 0;
-				m_navquery.findNearestPoly(@ag.targetPos, @m_ext, m_filters[ag.params.queryFilterType], @ag.targetRef, @nearest);
-				dtVcopy(@ag.targetPos, @nearest);
+				m_navquery.findNearestPoly(@ag.targetPos[0], @m_ext[0], m_filters[ag.params.queryFilterType], @ag.targetRef, @nearest[0]);
+				dtVcopy(@ag.targetPos[0], @nearest[0]);
 				replan := true;
 			end;
 			if (ag.targetRef = 0) then
 			begin
 				// Failed to reposition target, fail moverequest.
-				ag.corridor.reset(agentRef, @agentPos);
+				ag.corridor.reset(agentRef, @agentPos[0]);
 				ag.partial := false;
 				ag.targetState := DT_CROWDAGENT_TARGET_NONE;
 			end;
@@ -1466,7 +1466,7 @@ begin
 		begin
 			if (ag.targetState <> DT_CROWDAGENT_TARGET_NONE) then
 			begin
-				requestMoveTargetReplan(idx, ag.targetRef, @ag.targetPos);
+				requestMoveTargetReplan(idx, ag.targetRef, @ag.targetPos[0]);
 			end;
 		end;
 	end;
@@ -1500,7 +1500,7 @@ begin
 	for i := 0 to nagents - 1 do
 	begin
 		ag := agents[i];
-		p := @ag.npos;
+		p := @ag.npos[0];
 		r := ag.params.radius;
 		m_grid.addItem(Word(i), p[0]-r, p[2]-r, p[0]+r, p[2]+r);
 	end;
@@ -1515,15 +1515,15 @@ begin
 		// Update the collision boundary after certain distance has been passed or
 		// if it has become invalid.
 		updateThr := ag.params.collisionQueryRange*0.25;
-		if (dtVdist2DSqr(@ag.npos, ag.boundary.getCenter()) > Sqr(updateThr)) or
+		if (dtVdist2DSqr(@ag.npos[0], ag.boundary.getCenter()) > Sqr(updateThr)) or
 			(not ag.boundary.isValid(m_navquery, m_filters[ag.params.queryFilterType])) then
 		begin
-			ag.boundary.update(ag.corridor.getFirstPoly(), @ag.npos, ag.params.collisionQueryRange,
+			ag.boundary.update(ag.corridor.getFirstPoly(), @ag.npos[0], ag.params.collisionQueryRange,
 								m_navquery, m_filters[ag.params.queryFilterType]);
 		end;
 		// Query neighbour agents
-		ag.nneis := getNeighbours(@ag.npos, ag.params.height, ag.params.collisionQueryRange,
-								  ag, @ag.neis, DT_CROWDAGENT_MAX_NEIGHBOURS,
+		ag.nneis := getNeighbours(@ag.npos[0], ag.params.height, ag.params.collisionQueryRange,
+								  ag, @ag.neis[0], DT_CROWDAGENT_MAX_NEIGHBOURS,
 								  agents, nagents, m_grid);
 		for j := 0 to ag.nneis - 1 do
 			ag.neis[j].idx := getAgentIndex(agents[ag.neis[j].idx]);
@@ -1540,7 +1540,7 @@ begin
 			continue;
 
 		// Find corners for steering
-		ag.ncorners := ag.corridor.findCorners(@ag.cornerVerts, @ag.cornerFlags, @ag.cornerPolys,
+		ag.ncorners := ag.corridor.findCorners(@ag.cornerVerts[0], @ag.cornerFlags[0], @ag.cornerPolys[0],
 												DT_CROWDAGENT_MAX_CORNERS, m_navquery, m_filters[ag.params.queryFilterType]);
 
 		// Check to see if the corner after the next corner is directly visible,
@@ -1553,8 +1553,8 @@ begin
 			// Copy data for debug purposes.
 			if (debugIdx = i) then
 			begin
-				dtVcopy(@debug.optStart, ag.corridor.getPos());
-				dtVcopy(@debug.optEnd, target);
+				dtVcopy(@debug.optStart[0], ag.corridor.getPos());
+				dtVcopy(@debug.optEnd[0], target);
 			end;
 		end
 		else
@@ -1562,8 +1562,8 @@ begin
 			// Copy data for debug purposes.
 			if (debugIdx = i) then
 			begin
-				dtVset(@debug.optStart, 0,0,0);
-				dtVset(@debug.optEnd, 0,0,0);
+				dtVset(@debug.optStart[0], 0,0,0);
+				dtVset(@debug.optEnd[0], 0,0,0);
 			end;
 		end;
 	end;
@@ -1587,14 +1587,14 @@ begin
 			anim := @m_agentAnims[idx];
 
 			// Adjust the path over the off-mesh connection.
-			if (ag.corridor.moveOverOffmeshConnection(ag.cornerPolys[ag.ncorners-1], @refs,
-													   @anim.startPos, @anim.endPos, m_navquery)) then
+			if (ag.corridor.moveOverOffmeshConnection(ag.cornerPolys[ag.ncorners-1], @refs[0],
+													   @anim.startPos[0], @anim.endPos[0], m_navquery)) then
 			begin
-				dtVcopy(@anim.initPos, @ag.npos);
+				dtVcopy(@anim.initPos[0], @ag.npos[0]);
 				anim.polyRef := refs[1];
 				anim.active := true;
 				anim.t := 0.0;
-				anim.tmax := (dtVdist2D(@anim.startPos, @anim.endPos) / ag.params.maxSpeed) * 0.5;
+				anim.tmax := (dtVdist2D(@anim.startPos[0], @anim.endPos[0]) / ag.params.maxSpeed) * 0.5;
 				
 				ag.state := DT_CROWDAGENT_STATE_OFFMESH;
 				ag.ncorners := 0;
@@ -1622,23 +1622,23 @@ begin
 
 		if (ag.targetState = DT_CROWDAGENT_TARGET_VELOCITY) then
 		begin
-			dtVcopy(@dvel, @ag.targetPos);
-			ag.desiredSpeed := dtVlen(@ag.targetPos);
+			dtVcopy(@dvel[0], @ag.targetPos[0]);
+			ag.desiredSpeed := dtVlen(@ag.targetPos[0]);
 		end
 		else
 		begin
 			// Calculate steering direction.
 			if (ag.params.updateFlags and DT_CROWD_ANTICIPATE_TURNS) <> 0 then
-				calcSmoothSteerDirection(ag, @dvel)
+				calcSmoothSteerDirection(ag, @dvel[0])
 			else
-				calcStraightSteerDirection(ag, @dvel);
+				calcStraightSteerDirection(ag, @dvel[0]);
 
 			// Calculate speed scale, which tells the agent to slowdown at the end of the path.
 			slowDownRadius := ag.params.radius*2;	// TODO: make less hacky.
 			speedScale := getDistanceToGoal(ag, slowDownRadius) / slowDownRadius;
 
 			ag.desiredSpeed := ag.params.maxSpeed;
-			dtVscale(@dvel, @dvel, ag.desiredSpeed * speedScale);
+			dtVscale(@dvel[0], @dvel[0], ag.desiredSpeed * speedScale);
 		end;
 
 		// Separation
@@ -1655,10 +1655,10 @@ begin
 			begin
 				nei := @m_agents[ag.neis[j].idx];
 
-				dtVsub(@diff, @ag.npos, @nei.npos);
+				dtVsub(@diff[0], @ag.npos[0], @nei.npos[0]);
 				diff[1] := 0;
 				
-				distSqr := dtVlenSqr(@diff);
+				distSqr := dtVlenSqr(@diff[0]);
 				if (distSqr < 0.00001) then
 					continue;
 				if (distSqr > Sqr(separationDist)) then
@@ -1666,24 +1666,24 @@ begin
 				dist := Sqrt(distSqr);
 				weight := separationWeight * (1.0 - Sqr(dist*invSeparationDist));
 				
-				dtVmad(@disp, @disp, @diff, weight/dist);
+				dtVmad(@disp[0], @disp[0], @diff[0], weight/dist);
 				w := w + 1.0;
 			end;
 
 			if (w > 0.0001) then
 			begin
 				// Adjust desired velocity.
-				dtVmad(@dvel, @dvel, @disp, 1.0/w);
+				dtVmad(@dvel[0], @dvel[0], @disp[0], 1.0/w);
 				// Clamp desired velocity to desired speed.
-				speedSqr := dtVlenSqr(@dvel);
+				speedSqr := dtVlenSqr(@dvel[0]);
 				desiredSqr := Sqr(ag.desiredSpeed);
 				if (speedSqr > desiredSqr) then
-					dtVscale(@dvel, @dvel, desiredSqr/speedSqr);
+					dtVscale(@dvel[0], @dvel[0], desiredSqr/speedSqr);
 			end;
 		end;
 		
 		// Set the desired velocity.
-		dtVcopy(@ag.dvel, @dvel);
+		dtVcopy(@ag.dvel[0], @dvel[0]);
 	end;
 	
 	// Velocity planning.	
@@ -1702,14 +1702,14 @@ begin
 			for j := 0 to ag.nneis - 1 do
 			begin
 				nei := @m_agents[ag.neis[j].idx];
-				m_obstacleQuery.addCircle(@nei.npos, nei.params.radius, @nei.vel, @nei.dvel);
+				m_obstacleQuery.addCircle(@nei.npos[0], nei.params.radius, @nei.vel[0], @nei.dvel[0]);
 			end;
 
 			// Append neighbour segments as obstacles.
 			for j := 0 to ag.boundary.getSegmentCount - 1 do
 			begin
 				s := ag.boundary.getSegment(j);
-				if (dtTriArea2D(@ag.npos, s, s+3) < 0.0) then
+				if (dtTriArea2D(@ag.npos[0], s, s+3) < 0.0) then
 					continue;
 				m_obstacleQuery.addSegment(s, s+3);
 			end;
@@ -1719,27 +1719,27 @@ begin
 				vod := debug.vod;
 			
 			// Sample new safe velocity.
-			adaptive := true;
+			adaptive :=  true;
 			ns := 0;
 
 			params := @m_obstacleQueryParams[ag.params.obstacleAvoidanceType];
 
 			if (adaptive) then
 			begin
-				ns := m_obstacleQuery.sampleVelocityAdaptive(@ag.npos, ag.params.radius, ag.desiredSpeed,
-															 @ag.vel, @ag.dvel, @ag.nvel, params, vod);
+				ns := m_obstacleQuery.sampleVelocityAdaptive(@ag.npos[0], ag.params.radius, ag.desiredSpeed,
+															 @ag.vel[0], @ag.dvel[0], @ag.nvel[0], params, vod);
 			end
 			else
 			begin
-				ns := m_obstacleQuery.sampleVelocityGrid(@ag.npos, ag.params.radius, ag.desiredSpeed,
-														 @ag.vel, @ag.dvel, @ag.nvel, params, vod);
+				ns := m_obstacleQuery.sampleVelocityGrid(@ag.npos[0], ag.params.radius, ag.desiredSpeed,
+														 @ag.vel[0], @ag.dvel[0], @ag.nvel[0], params, vod);
 			end;
 			m_velocitySampleCount := m_velocitySampleCount + ns;
 		end
 		else
 		begin
 			// If not using velocity planning, new velocity is directly the desired velocity.
-			dtVcopy(@ag.nvel, @ag.dvel);
+			dtVcopy(@ag.nvel[0], @ag.dvel[0]);
 		end;
 	end;
 
@@ -1764,7 +1764,7 @@ begin
 			if (ag.state <> DT_CROWDAGENT_STATE_WALKING) then
 				continue;
 
-			dtVset(@ag.disp, 0,0,0);
+			dtVset(@ag.disp[0], 0,0,0);
 			
 			w := 0;
 
@@ -1773,10 +1773,10 @@ begin
 				nei := @m_agents[ag.neis[j].idx];
 				idx1 := getAgentIndex(nei);
 
-				dtVsub(@diff, @ag.npos, @nei.npos);
+				dtVsub(@diff[0], @ag.npos[0], @nei.npos[0]);
 				diff[1] := 0;
 				
-				dist := dtVlenSqr(@diff);
+				dist := dtVlenSqr(@diff[0]);
 				if (dist > Sqr(ag.params.radius + nei.params.radius)) then
 					continue;
 				dist := Sqrt(dist);
@@ -1785,9 +1785,9 @@ begin
 				begin
 					// Agents on top of each other, try to choose diverging separation directions.
 					if (idx0 > idx1) then
-						dtVset(@diff, -ag.dvel[2],0,ag.dvel[0])
+						dtVset(@diff[0], -ag.dvel[2],0,ag.dvel[0])
 					else
-						dtVset(@diff, ag.dvel[2],0,-ag.dvel[0]);
+						dtVset(@diff[0], ag.dvel[2],0,-ag.dvel[0]);
 					pen := 0.01;
 				end
 				else
@@ -1795,7 +1795,7 @@ begin
 					pen := (1.0/dist) * (pen*0.5) * COLLISION_RESOLVE_FACTOR;
 				end;
 
-				dtVmad(@ag.disp, @ag.disp, @diff, pen);
+				dtVmad(@ag.disp[0], @ag.disp[0], @diff[0], pen);
 
 				w := w + 1.0;
 			end;
@@ -1803,7 +1803,7 @@ begin
 			if (w > 0.0001) then
 			begin
 				iw := 1.0 / w;
-				dtVscale(@ag.disp, @ag.disp, iw);
+				dtVscale(@ag.disp[0], @ag.disp[0], iw);
 			end;
 		end;
 		
@@ -1813,7 +1813,7 @@ begin
 			if (ag.state <> DT_CROWDAGENT_STATE_WALKING) then
 				continue;
 
-			dtVadd(@ag.npos, @ag.npos, @ag.disp);
+			dtVadd(@ag.npos[0], @ag.npos[0], @ag.disp[0]);
 		end;
 	end;
 
@@ -1824,14 +1824,14 @@ begin
 			continue;
 		
 		// Move along navmesh.
-		ag.corridor.movePosition(@ag.npos, m_navquery, m_filters[ag.params.queryFilterType]);
+		ag.corridor.movePosition(@ag.npos[0], m_navquery, m_filters[ag.params.queryFilterType]);
 		// Get valid constrained position back.
-		dtVcopy(@ag.npos, ag.corridor.getPos());
+		dtVcopy(@ag.npos[0], ag.corridor.getPos());
 
 		// If not using path, truncate the corridor to just one poly.
 		if (ag.targetState = DT_CROWDAGENT_TARGET_NONE) or (ag.targetState = DT_CROWDAGENT_TARGET_VELOCITY) then
 		begin
-			ag.corridor.reset(ag.corridor.getFirstPoly(), @ag.npos);
+			ag.corridor.reset(ag.corridor.getFirstPoly(), @ag.npos[0]);
 			ag.partial := false;
 		end;
 
@@ -1861,17 +1861,17 @@ begin
 		if (anim.t < ta) then
 		begin
 			u := tween(anim.t, 0.0, ta);
-			dtVlerp(@ag.npos, @anim.initPos, @anim.startPos, u);
+			dtVlerp(@ag.npos[0], @anim.initPos[0], @anim.startPos[0], u);
 		end
 		else
 		begin
 			u := tween(anim.t, ta, tb);
-			dtVlerp(@ag.npos, @anim.startPos, @anim.endPos, u);
+			dtVlerp(@ag.npos[0], @anim.startPos[0], @anim.endPos[0], u);
 		end;
 			
 		// Update velocity.
-		dtVset(@ag.vel, 0,0,0);
-		dtVset(@ag.dvel, 0,0,0);
+		dtVset(@ag.vel[0], 0,0,0);
+		dtVset(@ag.dvel[0], 0,0,0);
 	end;
 	
 end;
@@ -1880,6 +1880,6 @@ end;
 function TdtCrowd.getAgentIndex(agent: PdtCrowdAgent): Integer; begin Result := Integer(agent - m_agents); end;
 function TdtCrowd.getFilter(const i: Integer): TdtQueryFilter; begin if (i >= 0) and (i < DT_CROWD_MAX_QUERY_FILTER_TYPE) then Result := m_filters[i] else Result := nil; end;
 function TdtCrowd.getEditableFilter(const i: Integer): TdtQueryFilter; begin if (i >= 0) and (i < DT_CROWD_MAX_QUERY_FILTER_TYPE) then Result := m_filters[i] else Result := nil; end;
-function TdtCrowd.getQueryExtents(): PSingle; begin Result := @m_ext; end;
+function TdtCrowd.getQueryExtents(): PSingle; begin Result := @m_ext[0]; end;
 
 end.
