@@ -56,4 +56,12 @@ object FrameCrowdTool: TFrameCrowdTool
     Caption = 'Obstacle Avoidance'
     TabOrder = 4
   end
+  object cbSeparation: TCheckBox
+    Left = 8
+    Top = 176
+    Width = 73
+    Height = 17
+    Caption = 'Separation'
+    TabOrder = 6
+  end
 end

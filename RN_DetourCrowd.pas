@@ -377,35 +377,35 @@ your navigation client should be moving toward. When it comes to deciding things
 like agent velocity and steering to avoid other agents, that is up to you to 
 implement. Unless, of course, you decide to use #dtCrowd.
 
-Basically, you add an agent to the crowd, providing various configuration 
-settings such as maximum speed and acceleration. You also provide a local 
-target to more toward. The crowd manager then provides, with every update, the 
-new agent position and velocity for the frame. The movement will be 
-constrained to the navigation mesh, and steering will be applied to ensure 
+Basically, you add an agent to the crowd, providing various configuration
+settings such as maximum speed and acceleration. You also provide a local
+target to more toward. The crowd manager then provides, with every update, the
+new agent position and velocity for the frame. The movement will be
+constrained to the navigation mesh, and steering will be applied to ensure
 agents managed by the crowd do not collide with each other.
 
 This is very powerful feature set. But it comes with limitations.
 
-The biggest limitation is that you must give control of the agent's position 
-completely over to the crowd manager. You can update things like maximum speed 
-and acceleration. But in order for the crowd manager to do its thing, it can't 
-allow you to constantly be giving it overrides to position and velocity. So 
+The biggest limitation is that you must give control of the agent's position
+completely over to the crowd manager. You can update things like maximum speed
+and acceleration. But in order for the crowd manager to do its thing, it can't
+allow you to constantly be giving it overrides to position and velocity. So
 you give up direct control of the agent's movement. It belongs to the crowd.
 
-The second biggest limitation revolves around the fact that the crowd manager 
-deals with local planning. So the agent's target should never be more than 
-256 polygons aways from its current position. If it is, you risk 
-your agent failing to reach its target. So you may still need to do long 
+The second biggest limitation revolves around the fact that the crowd manager
+deals with local planning. So the agent's target should never be more than
+256 polygons aways from its current position. If it is, you risk
+your agent failing to reach its target. So you may still need to do long
 distance planning and provide the crowd manager with intermediate targets.
 
 Other significant limitations:
 
 - All agents using the crowd manager will use the same #dtQueryFilter.
-- Crowd management is relatively expensive. The maximum agents under crowd 
+- Crowd management is relatively expensive. The maximum agents under crowd
   management at any one time is between 20 and 30.  A good place to start
   is a maximum of 25 agents for 0.5ms per frame.
 
-@note This is a summary list of members.  Use the index or search 
+@note This is a summary list of members.  Use the index or search
 feature to find minor members.
 
 @struct dtCrowdAgentParams
@@ -414,10 +414,10 @@ feature to find minor members.
 @var dtCrowdAgentParams::obstacleAvoidanceType
 @par
 
-#dtCrowd permits agents to use different avoidance configurations.  This value 
+#dtCrowd permits agents to use different avoidance configurations.  This value
 is the index of the #dtObstacleAvoidanceParams within the crowd.
 
-@see dtObstacleAvoidanceParams, dtCrowd::setObstacleAvoidanceParams(), 
+@see dtObstacleAvoidanceParams, dtCrowd::setObstacleAvoidanceParams(),
 	 dtCrowd::getObstacleAvoidanceParams()
 
 @var dtCrowdAgentParams::collisionQueryRange
@@ -565,7 +565,6 @@ function addNeighbour(const idx: Integer; const dist: Single;
 var nei: PdtCrowdNeighbour; i, tgt, n: Integer;
 begin
 	// Insert neighbour based on the distance.
-	nei := nil;
 	if (nneis = 0) then
 	begin
 		nei := @neis[nneis];
@@ -636,7 +635,6 @@ function addToOptQueue(newag: PdtCrowdAgent; agents: PPdtCrowdAgent; const nagen
 var slot, i, tgt, n: Integer;
 begin
 	// Insert neighbour based on greatest time.
-	slot := 0;
 	if (nagents = 0) then
 	begin
 		slot := nagents;
@@ -672,7 +670,6 @@ function addToPathQueue(newag: PdtCrowdAgent; agents: PPdtCrowdAgent; const nage
 var slot, i, tgt, n: Integer;
 begin
 	// Insert neighbour based on greatest time.
-	slot := 0;
 	if (nagents = 0) then
 	begin
 		slot := nagents;
@@ -832,7 +829,6 @@ begin
 		Exit(false);
 
 	// Init obstacle query params.
-  Assert(sizeof(m_obstacleQueryParams) = Length(m_obstacleQueryParams) * SizeOf(TdtObstacleAvoidanceParams));
 	FillChar(m_obstacleQueryParams[0], sizeof(m_obstacleQueryParams), 0);
 	for i := 0 to DT_CROWD_MAX_OBSTAVOIDANCE_PARAMS - 1 do
 	begin
@@ -1210,7 +1206,7 @@ begin
 			ag.targetState := DT_CROWDAGENT_TARGET_WAITING_FOR_PATH;
 	end;
 
-	
+
 	// Update requests.
 	m_pathq.update(MAX_ITERS_PER_UPDATE);
 
@@ -1567,7 +1563,7 @@ begin
 			end;
 		end;
 	end;
-	
+
 	// Trigger off-mesh connections (depends on corners).
 	for i := 0 to nagents - 1 do
 	begin

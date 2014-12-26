@@ -10,6 +10,7 @@ type
     cbOptimizeTopology: TCheckBox;
     cbAnticipateTurns: TCheckBox;
     cbObstacleAvoidance: TCheckBox;
+    cbSeparation: TCheckBox;
     Label1: TLabel;
   end;
 

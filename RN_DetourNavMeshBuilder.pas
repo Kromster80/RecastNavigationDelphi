@@ -264,7 +264,7 @@ begin
   else
   begin
     // Split
-    calcExtends(items, nitems, imin, imax, @node.bmin[0], @node.bmax[0]);
+    calcExtends(items, nitems, imin, imax, @node.bmin, @node.bmax[0]);
 
     axis := longestAxis(node.bmax[0] - node.bmin[0],
                  node.bmax[1] - node.bmin[1],

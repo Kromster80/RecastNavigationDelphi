@@ -184,6 +184,8 @@ begin
   FreeAndNil(m_navMesh);
   dtFreeCrowd(m_crowd);
 
+  FreeAndNil(m_tool);
+
   inherited;
 end;
 

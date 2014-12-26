@@ -27,7 +27,6 @@ uses
 type
   PCrowdToolParams = ^TCrowdToolParams;
   TCrowdToolParams = record
-    m_expandSelectedDebugDraw: Boolean;
     m_showCorners: Boolean;
     m_showCollisionSegments: Boolean;
     m_showPath: Boolean;
@@ -35,14 +34,12 @@ type
     m_showOpt: Boolean;
     m_showNeis: Boolean;
 
-    m_expandDebugDraw: Boolean;
     m_showLabels: Boolean;
     m_showGrid: Boolean;
     m_showNodes: Boolean;
     m_showPerfGraph: Boolean;
     m_showDetailAll: Boolean;
 
-    m_expandOptions: Boolean;
     m_anticipateTurns: Boolean;
     m_optimizeVis: Boolean;
     m_optimizeTopo: Boolean;
@@ -203,20 +200,19 @@ begin
   inherited;
 
 	m_run := true;
-	m_toolParams.m_expandSelectedDebugDraw := true;
 	m_toolParams.m_showCorners := false;
 	m_toolParams.m_showCollisionSegments := false;
 	m_toolParams.m_showPath := false;
 	m_toolParams.m_showVO := false;
 	m_toolParams.m_showOpt := false;
 	m_toolParams.m_showNeis := false;
-	m_toolParams.m_expandDebugDraw := false;
+
 	m_toolParams.m_showLabels := false;
 	m_toolParams.m_showGrid := false;
 	m_toolParams.m_showNodes := false;
 	m_toolParams.m_showPerfGraph := false;
 	m_toolParams.m_showDetailAll := false;
-	m_toolParams.m_expandOptions := true;
+
 	m_toolParams.m_anticipateTurns := true;
 	m_toolParams.m_optimizeVis := true;
 	m_toolParams.m_optimizeTopo := true;
@@ -764,7 +760,7 @@ begin
 	if (m_sample = nil) then Exit;
 	crowd := m_sample.getCrowd;
 
-	FillChar(ap, sizeof(ap), 0);
+	FillChar(ap, sizeof(TdtCrowdAgentParams), 0);
 	ap.radius := m_sample.getAgentRadius;
 	ap.height := m_sample.getAgentHeight;
 	ap.maxAcceleration := 8.0;
@@ -997,6 +993,7 @@ begin
   fFrame.cbOptimizeTopology.OnClick := handleMenu;
   fFrame.cbAnticipateTurns.OnClick := handleMenu;
   fFrame.cbObstacleAvoidance.OnClick := handleMenu;
+  fFrame.cbSeparation.OnClick := handleMenu;
 end;
 
 destructor TCrowdTool.Destroy;
@@ -1049,6 +1046,7 @@ begin
     fFrame.cbOptimizeTopology.Checked := params.m_optimizeTopo;
     fFrame.cbAnticipateTurns.Checked := params.m_anticipateTurns;
     fFrame.cbObstacleAvoidance.Checked := params.m_obstacleAvoidance;
+    fFrame.cbSeparation.Checked := params.m_separation;
     fUpdateUI := False;
   end;
 
@@ -1060,6 +1058,7 @@ begin
     params.m_optimizeTopo := fFrame.cbOptimizeTopology.Checked;
     params.m_anticipateTurns := fFrame.cbAnticipateTurns.Checked;
     params.m_obstacleAvoidance := fFrame.cbObstacleAvoidance.Checked;
+    params.m_separation := fFrame.cbSeparation.Checked;
     m_state.updateAgentParams();
 
   end;

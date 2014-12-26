@@ -116,7 +116,7 @@ begin
 	end;
 
 	seg.d := dist;
-	Move(s, seg.s, sizeof(Single)*6);
+	Move(s^, seg.s[0], sizeof(Single)*6);
 
 	if (m_nsegs < MAX_LOCAL_SEGS) then
 		Inc(m_nsegs);

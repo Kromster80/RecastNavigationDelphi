@@ -429,7 +429,7 @@ begin
 
 		// Precalc if the agent is really close to the segment.
 		r := 0.01;
-		seg.touch := dtDistancePtSegSqr2D(pos, @seg.p[0], @seg.q[0], @t) < Sqr(r);
+		seg.touch := dtDistancePtSegSqr2D(pos, @seg.p, @seg.q[0], @t) < Sqr(r);
 	end;
 end;
 
@@ -509,7 +509,7 @@ begin
 		if (seg.touch) then
 		begin
 			// Special case when the agent is very close to the segment.
-			dtVsub(@sdir[0], @seg.q[0], @seg.p[0]);
+			dtVsub(@sdir[0], @seg.q[0], @seg.p);
 			snorm[0] := -sdir[2];
 			snorm[2] := sdir[0];
 			// If the velocity is pointing towards the segment, no collision.
@@ -520,7 +520,7 @@ begin
 		end
 		else
 		begin
-			if (isectRaySeg(pos, vcand, @seg.p[0], @seg.q[0], @htmin) = 0) then
+			if (isectRaySeg(pos, vcand, @seg.p, @seg.q[0], @htmin) = 0) then
 				continue;
 		end;
 

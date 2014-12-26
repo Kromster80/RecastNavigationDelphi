@@ -104,7 +104,7 @@ type
 const MAX_STACK = 64;
 var w,h: Integer; srcReg: PByte; nsweeps: Integer; sweeps: array of TrcLayerSweepSpan; prevCount: array [0..255] of Integer;
 regId: Byte; x,y,i,j,k: Integer; sweepId: Byte; c: PrcCompactCell; s,as1: PrcCompactSpan; sid: Byte; ax,ay,ai: Integer; nr: Byte; nregs: Integer;
-regs: array of TrcLayerRegion; lregs: array [0..RC_MAX_LAYERS-1] of Byte; nlregs: Integer; regi,dir,rai: Byte; ri,rj: PrcLayerRegion;
+regs: PrcLayerRegion; lregs: array [0..RC_MAX_LAYERS-1] of Byte; nlregs: Integer; regi,dir,rai: Byte; ri,rj: PrcLayerRegion;
 layerId: Byte; stack: array [0..MAX_STACK-1] of Byte; nstack: Integer; root: PrcLayerRegion; reg,regn: PrcLayerRegion; nneis: Integer; nei: Byte;
 ymin,ymax: Integer; mergeHeight: Word; newId,oldId: Byte; overlap: Boolean; remap: array [0..255] of Byte; lw,lh: Integer; bmin, bmax: array [0..2] of Single;
 curId: Byte; layer: PrcHeightfieldLayer; gridSize: Integer; hmin,hmax: Integer; cx,cy: Integer; lid,alid: Byte; idx: Integer; portal, con: Byte;
@@ -128,7 +128,7 @@ begin
 
   for y := borderSize to h-borderSize - 1 do
   begin
-    FillChar(prevCount[0], SizeOf(Integer)*regId, #0);
+    FillChar(prevCount[0], SizeOf(Integer)*regId, 0);
     sweepId := 0;
 
     for x := borderSize to w-borderSize - 1 do
@@ -227,7 +227,8 @@ begin
 
   // Allocate and init layer regions.
   nregs := regId;
-  SetLength(regs, nregs);
+  GetMem(regs, sizeof(TrcLayerRegion)*nregs);
+	FillChar(regs[0], sizeof(TrcLayerRegion)*nregs, 0);
 
   for i := 0 to nregs - 1 do
   begin
@@ -466,7 +467,7 @@ begin
   end;
 
   // Create layers.
-  //rcAssert(lset.layers == 0);
+  Assert(Length(lset.layers) = 0);
 
   lw := w - borderSize*2;
   lh := h - borderSize*2;
@@ -488,9 +489,7 @@ begin
   begin
     curId := i;
 
-    // Allocate memory for the current layer.
     layer := @lset.layers[i];
-    //memset(layer, 0, sizeof(rcHeightfieldLayer));
 
     gridSize := lw*lh;
 
