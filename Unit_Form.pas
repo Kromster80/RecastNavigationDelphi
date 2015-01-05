@@ -236,6 +236,7 @@ begin
   fGeom := TInputGeom.Create;
   fGeom.loadMesh(fCtx, meshName);
 
+  fSample.Free;
   fSample := TSample_SoloMesh.Create(gbTool);
   fSample.setContext := fCtx;
 
