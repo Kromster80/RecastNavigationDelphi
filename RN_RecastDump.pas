@@ -28,7 +28,7 @@ function duDumpContourSet(cset: PrcContourSet; aFilename: string): Boolean;
 //function duReadContourSet(xset: PrcContourSet; aFilename: string): Boolean;
 function duDumpHeightfield(hf: PrcHeightfield; aFilename: string): Boolean;
 function duDumpCompactHeightfield(chf: PrcCompactHeightfield; aFilename: string): Boolean;
-//function duReadCompactHeightfield(chf: PrcCompactHeightfield; aFilename: string): Boolean;
+function duReadCompactHeightfield(chf: PrcCompactHeightfield; aFilename: string): Boolean;
 procedure duLogBuildTimes(ctx: TrcContext; totalTimeUsec: Integer);
 
 
@@ -357,99 +357,91 @@ begin
   Result := true;
 end;
 
-{function duReadCompactHeightfield(chf: PrcCompactHeightfield; aFilename: string): Boolean;
+function duReadCompactHeightfield(chf: PrcCompactHeightfield; aFilename: string): Boolean;
+var io: TMemoryStream; magic, version, tmp: Integer; i: Integer; t: Cardinal;
 begin
-  if (!io)
-  begin
-    printf('duReadCompactHeightfield: input IO is null.\n');
-    return false;
-  end;
-  if (!io.isReading())
-  begin
-    printf('duReadCompactHeightfield: input IO not reading.\n');
-    return false;
-  end;
+  io := TMemoryStream.Create;
+  io.LoadFromFile(aFilename);
 
-  int magic = 0;
-  int version = 0;
+  magic := 0;
+  version := 0;
 
-  io.read(&magic, sizeof(magic));
-  io.read(&version, sizeof(version));
+  io.read(magic, sizeof(magic));
+  io.read(version, sizeof(version));
 
-  if (magic != CHF_MAGIC)
+  if (magic <> CHF_MAGIC) then
   begin
-    printf('duReadCompactHeightfield: Bad voodoo.\n');
-    return false;
+    //printf('duReadCompactHeightfield: Bad voodoo.\n');
+    Exit(false);
   end;
-  if (version != CHF_VERSION)
+  if (version <> CHF_VERSION) then
   begin
-    printf('duReadCompactHeightfield: Bad version.\n');
-    return false;
+    //printf('duReadCompactHeightfield: Bad version.\n');
+    Exit(false);
   end;
 
-  io.read(&chf.width, sizeof(chf.width));
-  io.read(&chf.height, sizeof(chf.height));
-  io.read(&chf.spanCount, sizeof(chf.spanCount));
+  io.read(chf.width, sizeof(chf.width));
+  io.read(chf.height, sizeof(chf.height));
+  io.read(chf.spanCount, sizeof(chf.spanCount));
 
-  io.read(&chf.walkableHeight, sizeof(chf.walkableHeight));
-  io.read(&chf.walkableClimb, sizeof(chf.walkableClimb));
-  io.write(&chf.borderSize, sizeof(chf.borderSize));
+  io.read(chf.walkableHeight, sizeof(chf.walkableHeight));
+  io.read(chf.walkableClimb, sizeof(chf.walkableClimb));
+  io.write(chf.borderSize, sizeof(chf.borderSize));
 
-  io.read(&chf.maxDistance, sizeof(chf.maxDistance));
-  io.read(&chf.maxRegions, sizeof(chf.maxRegions));
+  io.read(chf.maxDistance, sizeof(chf.maxDistance));
+  io.read(chf.maxRegions, sizeof(chf.maxRegions));
 
-  io.read(chf.bmin, sizeof(chf.bmin));
-  io.read(chf.bmax, sizeof(chf.bmax));
+  io.read(chf.bmin[0], sizeof(chf.bmin));
+  io.read(chf.bmax[0], sizeof(chf.bmax));
 
-  io.read(&chf.cs, sizeof(chf.cs));
-  io.read(&chf.ch, sizeof(chf.ch));
+  io.read(chf.cs, sizeof(chf.cs));
+  io.read(chf.ch, sizeof(chf.ch));
 
-  int tmp = 0;
-  io.read(&tmp, sizeof(tmp));
+  tmp := 0;
+  io.read(tmp, sizeof(tmp));
 
-  if (tmp & 1)
+  if (tmp and 1) <> 0 then
   begin
-    chf.cells = (rcCompactCell*)rcAlloc(sizeof(rcCompactCell)*chf.width*chf.height, RC_ALLOC_PERM);
-    if (!chf.cells)
+    SetLength(chf.cells, chf.width*chf.height);
+
+    // Delphi. Need to read through temp var and split into parts
+    for i := 0 to Length(chf.cells) - 1 do
     begin
-      printf('duReadCompactHeightfield: Could not alloc cells (%d)\n', chf.width*chf.height);
-      return false;
+      io.read(t, SizeOf(t));
+      chf.cells[i].index := t and $ffffff;
+      chf.cells[i].count := t shr 24 and $ff;
     end;
-    io.read(chf.cells, sizeof(rcCompactCell)*chf.width*chf.height);
   end;
-  if (tmp & 2)
+  if (tmp and 2) <> 0 then
   begin
-    chf.spans = (rcCompactSpan*)rcAlloc(sizeof(rcCompactSpan)*chf.spanCount, RC_ALLOC_PERM);
-    if (!chf.spans)
+    SetLength(chf.spans, chf.spanCount);
+
+    // Delphi. Need to read through temp var and split into parts
+    for i := 0 to Length(chf.spans) - 1 do
     begin
-      printf('duReadCompactHeightfield: Could not alloc spans (%d)\n', chf.spanCount);
-      return false;
+      io.read(t, SizeOf(t));
+      chf.spans[i].y := t and $ffff;
+      chf.spans[i].reg := t shr 16 and $ffff;
+      io.read(t, SizeOf(t));
+      chf.spans[i].con := t and $ffffff;
+      chf.spans[i].h := t shr 24 and $ff;
     end;
-    io.read(chf.spans, sizeof(rcCompactSpan)*chf.spanCount);
   end;
-  if (tmp & 4)
+  if (tmp and 4) <> 0 then
   begin
-    chf.dist = (unsigned short*)rcAlloc(sizeof(unsigned short)*chf.spanCount, RC_ALLOC_PERM);
-    if (!chf.dist)
-    begin
-      printf('duReadCompactHeightfield: Could not alloc dist (%d)\n', chf.spanCount);
-      return false;
-    end;
-    io.read(chf.dist, sizeof(unsigned short)*chf.spanCount);
+    GetMem(chf.dist, sizeof(Word)*chf.spanCount);
+    io.read(chf.dist[0], sizeof(Word)*chf.spanCount);
   end;
-  if (tmp & 8)
+  if (tmp and 8) <> 0 then
   begin
-    chf.areas = (unsigned char*)rcAlloc(sizeof(unsigned char)*chf.spanCount, RC_ALLOC_PERM);
-    if (!chf.areas)
-    begin
-      printf('duReadCompactHeightfield: Could not alloc areas (%d)\n', chf.spanCount);
-      return false;
-    end;
-    io.read(chf.areas, sizeof(unsigned char)*chf.spanCount);
+    GetMem(chf.areas, sizeof(Byte)*chf.spanCount);
+    io.read(chf.areas[0], sizeof(Byte)*chf.spanCount);
   end;
 
-  return true;
-end;}
+  io.Free;
+
+  Result := true;
+end;
 
 
 procedure logLine(ctx: TrcContext; &label: TrcTimerLabel; name: string; pc: Single);
