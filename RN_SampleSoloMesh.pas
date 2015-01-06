@@ -134,6 +134,9 @@ end;
 
 procedure TSample_SoloMesh.setToolType(aType: TSampleToolType);
 begin
+  // Delphi. Dispose of any previous tool and it's Frame
+  setTool(nil);
+
   case aType of
     TOOL_NONE:                setTool(nil);
     TOOL_NAVMESH_TESTER:      setTool(TNavMeshTesterTool.Create(fOwner));
