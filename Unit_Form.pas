@@ -127,8 +127,8 @@ begin
 
   fExeDir := ExtractFilePath(Application.ExeName) + '..\..\';
 
-  fDist := 50;
-  fRotateY := -5;
+  fDist := 100;
+  fRotateY := -45;
 
   InitGL;
 
@@ -328,11 +328,21 @@ end;
 
 procedure TForm1.UpdateModelViewProjection;
 var
+  dx, dy, dz: Single;
   eyeX, eyeY, eyeZ: Single;
 begin
+  {$POINTERMATH ON}
   glMatrixMode(GL_PROJECTION); //Change Matrix Mode to Projection
   glLoadIdentity;
   gluPerspective(45, Panel3.Width / Panel3.Height, 0.01, 1000);
+
+  dx := 0; dy := 0; dz := 0;
+  if fSample <> nil then
+  begin
+    dx := (fSample.getBoundsMin[0] + fSample.getBoundsMax[0]) / 2;
+    dy := (fSample.getBoundsMin[1] + fSample.getBoundsMax[1]) / 2;
+    dz := (fSample.getBoundsMin[2] + fSample.getBoundsMax[2]) / 2;
+  end;
 
   eyeX := Sin(fRotateX / 180 * pi) * Cos(fRotateY / 180 * pi) * fDist;
   eyeY := Cos(fRotateX / 180 * pi) * Cos(fRotateY / 180 * pi) * fDist;
@@ -340,7 +350,8 @@ begin
 
   glMatrixMode(GL_MODELVIEW); //Return to the modelview matrix
   glLoadIdentity;
-  gluLookAt(eyeX, eyeY, eyeZ, 0, 0, 0, 0, 0, 1);
+  gluLookAt(eyeX + dx, eyeY + dy, eyeZ + dz, dx, dy, dz, 0, 0, 1);
+  {$POINTERMATH OFF}
 end;
 
 
