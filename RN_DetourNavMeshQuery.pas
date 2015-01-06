@@ -1178,10 +1178,11 @@ end;
 /// @p nearestRef before using @p nearestPt.
 ///
 /// @warning This function is not suitable for large area searches.  If the search
-/// extents overlaps more than 128 polygons it may return an invalid result.
+/// extents overlaps more than MAX_SEARCH (128) polygons it may return an invalid result.
 ///
 function TdtNavMeshQuery.findNearestPoly(center, extents: PSingle; filter: TdtQueryFilter; nearestRef: PdtPolyRef; nearestPt: PSingle): TdtStatus;
-var polys: array [0..127] of TdtPolyRef; polyCount: Integer; nearest,ref: TdtPolyRef; nearestDistanceSqr: Single; i: Integer;
+const MAX_SEARCH = 128;
+var polys: array [0..MAX_SEARCH-1] of TdtPolyRef; polyCount: Integer; nearest,ref: TdtPolyRef; nearestDistanceSqr: Single; i: Integer;
 closestPtPoly,diff: array [0..2] of Single; posOverPoly: Boolean; d: Single; tile: PdtMeshTile; poly: PdtPoly;
 begin
   //dtAssert(m_nav);
@@ -1190,7 +1191,7 @@ begin
 
   // Get nearby polygons from proximity grid.
   polyCount := 0;
-  if (dtStatusFailed(queryPolygons(center, extents, filter, @polys[0], @polyCount, 128))) then
+  if (dtStatusFailed(queryPolygons(center, extents, filter, @polys[0], @polyCount, MAX_SEARCH))) then
     Exit(DT_FAILURE or DT_INVALID_PARAM);
 
   // Find nearest polygon amongst the nearby polygons.
