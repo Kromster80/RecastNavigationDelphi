@@ -80,6 +80,7 @@ type
     fSample: TSample_SoloMesh;
 
     procedure InitGL;
+    procedure UpdateGUI;
     procedure UpdateModelViewProjection;
   end;
 
@@ -121,6 +122,26 @@ begin
 end;
 
 
+procedure TForm1.UpdateGUI;
+begin
+  seCellSize.Value := Round(fSample.m_cellSize * 10);
+  seCellHeight.Value := Round(fSample.m_cellHeight * 10);
+  seAgentHeight.Value := Round(fSample.m_agentHeight * 10);
+  seAgentRadius.Value := Round(fSample.m_agentRadius * 10);
+  seMaxClimb.Value := Round(fSample.m_agentMaxClimb * 10);
+  seMaxSlope.Value := Round(fSample.m_agentMaxSlope);
+
+  seMinRegionSize.Value := Round(fSample.m_regionMinSize);
+  seMergedRegionSize.Value := Round(fSample.m_regionMergeSize);
+  seMaxEdgeLength.Value := Round(fSample.m_edgeMaxLen);
+  seMaxEdgeError.Value := Round(fSample.m_edgeMaxError * 10);
+  seVertsPerPoly.Value := Round(fSample.m_vertsPerPoly);
+  seSampleDistance.Value := Round(fSample.m_detailSampleDist);
+  seMaxSampleError.Value := Round(fSample.m_detailSampleMaxError);
+  rgPartitioning.ItemIndex := Byte(fSample.m_partitionType);
+end;
+
+
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   Set8087CW($133F);
@@ -134,6 +155,9 @@ begin
 
   fRotateX := 0;
 
+  fSample := TSample_SoloMesh.Create(gbTool);
+
+  UpdateGUI;
   Button1Click(nil);
 
   Application.OnIdle := DoIdle;
@@ -236,8 +260,10 @@ begin
   fGeom := TInputGeom.Create;
   fGeom.loadMesh(fCtx, meshName);
 
+  // Recreate the Sample for new Build
   fSample.Free;
   fSample := TSample_SoloMesh.Create(gbTool);
+
   fSample.setContext := fCtx;
 
   fSample.m_cellSize := seCellSize.Value / 10;
