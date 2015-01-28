@@ -545,6 +545,7 @@ begin
   Result := Sqrt(minDist);
 end;
 
+// Last time I checked the if version got compiled using cmov, which was a lot faster than module (with idiv).
 function next(i, n: Integer): Integer; begin Result := (i+1) mod n; end;
 function prev(i, n: Integer): Integer; begin Result := (i+n-1) mod n; end;
 

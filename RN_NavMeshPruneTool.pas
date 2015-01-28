@@ -54,7 +54,6 @@ type
     m_hitPos: array [0..2] of Single;
     m_hitPosSet: Boolean;
   public
-    const &type = TOOL_NAVMESH_PRUNE;
     constructor Create(aOwner: TWinControl);
     destructor Destroy; override;
 
@@ -278,6 +277,8 @@ end;
 constructor TNavMeshPruneTool.Create(aOwner: TWinControl);
 begin
   inherited Create;
+  &type := TOOL_NAVMESH_PRUNE;
+
   fFrame := TFramePruneTool.Create(aOwner);
   fFrame.Align := alClient;
   fFrame.Parent := aOwner;

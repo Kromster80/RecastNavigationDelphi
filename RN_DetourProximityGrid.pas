@@ -23,7 +23,6 @@ uses Math, SysUtils;
 type
   TdtProximityGrid = class
   private
-    m_maxItems: Integer;
     m_cellSize: Single;
     m_invCellSize: Single;
 

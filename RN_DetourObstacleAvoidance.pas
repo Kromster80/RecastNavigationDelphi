@@ -384,7 +384,7 @@ end;
 procedure TdtObstacleAvoidanceQuery.addSegment(const p, q: PSingle);
 var seg: PdtObstacleSegment;
 begin
-	if (m_nsegments > m_maxSegments) then
+	if (m_nsegments >= m_maxSegments) then
 		Exit;
 
 	seg := @m_segments[m_nsegments];

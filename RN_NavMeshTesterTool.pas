@@ -96,7 +96,6 @@ type
     m_steerPoints: array [0..MAX_STEER_POINTS*3] of Single;
     m_steerPointCount: Integer;
   public
-    const &type = TOOL_NAVMESH_TESTER;
     constructor Create(aOwner: TWinControl);
     destructor Destroy; override;
 
@@ -304,6 +303,9 @@ end;
 constructor TNavMeshTesterTool.Create(aOwner: TWinControl);
 begin
   inherited Create;
+
+  &type := TOOL_NAVMESH_TESTER;
+
   fFrame := TFrameTesterTool.Create(aOwner);
   fFrame.Align := alClient;
   fFrame.Parent := aOwner;

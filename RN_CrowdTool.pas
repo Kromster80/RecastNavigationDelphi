@@ -122,7 +122,6 @@ type
     m_mode: TToolMode;
 
   public
-    const &type = TOOL_CROWD;
     constructor Create(aOwner: TWinControl);
     destructor Destroy; override;
 
@@ -983,6 +982,7 @@ begin
 	m_sample := nil;
 	m_state := nil;
 	m_mode := TOOLMODE_CREATE;
+  &type := TOOL_CROWD;
 
   fFrame := TFrameCrowdTool.Create(aOwner);
   fFrame.Align := alClient;

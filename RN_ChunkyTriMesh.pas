@@ -215,8 +215,6 @@ begin
   curNode := 0;
   subdivide(@items[0], ntris, 0, ntris, trisPerChunk, @curNode, @cm.nodes[0], nchunks*4, @curTri, cm.tris, tris);
 
-  SetLength(items, 0);
-
   cm.nnodes := curNode;
 
   // Calc max tris per node.
