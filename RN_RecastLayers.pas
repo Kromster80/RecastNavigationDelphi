@@ -228,7 +228,7 @@ begin
   // Allocate and init layer regions.
   nregs := regId;
   GetMem(regs, sizeof(TrcLayerRegion)*nregs);
-	FillChar(regs[0], sizeof(TrcLayerRegion)*nregs, 0);
+  FillChar(regs[0], sizeof(TrcLayerRegion)*nregs, 0);
 
   for i := 0 to nregs - 1 do
   begin
