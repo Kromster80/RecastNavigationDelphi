@@ -68,7 +68,7 @@ constructor TdtLocalBoundary.Create;
 begin
   inherited;
 
-	dtVset(@m_center[0], MaxSingle,MaxSingle,MaxSingle);
+  dtVset(@m_center[0], MaxSingle,MaxSingle,MaxSingle);
 end;
 
 destructor TdtLocalBoundary.Destroy;
@@ -78,48 +78,48 @@ end;
 
 procedure TdtLocalBoundary.reset();
 begin
-	dtVset(@m_center[0], MaxSingle,MaxSingle,MaxSingle);
-	m_npolys := 0;
-	m_nsegs := 0;
+  dtVset(@m_center[0], MaxSingle,MaxSingle,MaxSingle);
+  m_npolys := 0;
+  m_nsegs := 0;
 end;
 
 procedure TdtLocalBoundary.addSegment(const dist: Single; const s: PSingle);
 var seg: PSegment; i,tgt,n: Integer;
 begin
-	// Insert neighbour based on the distance.
-	seg := nil;
-	if (m_nsegs = 0) then
-	begin
-		// First, trivial accept.
-		seg := @m_segs[0];
-	end
-	else if (dist >= m_segs[m_nsegs-1].d) then
-	begin
-		// Further than the last segment, skip.
-		if (m_nsegs >= MAX_LOCAL_SEGS) then
-			Exit;
-		// Last, trivial accept.
-		seg := @m_segs[m_nsegs];
-	end
-	else
-	begin
-		// Insert inbetween.
-		for i := 0 to m_nsegs - 1 do
-			if (dist <= m_segs[i].d) then
-				break;
-		tgt := i+1;
-		n := dtMin(m_nsegs-i, MAX_LOCAL_SEGS-tgt);
-		Assert(tgt+n <= MAX_LOCAL_SEGS);
-		if (n > 0) then
-			Move(m_segs[i], m_segs[tgt], sizeof(TSegment)*n);
-		seg := @m_segs[i];
-	end;
+  // Insert neighbour based on the distance.
+  seg := nil;
+  if (m_nsegs = 0) then
+  begin
+    // First, trivial accept.
+    seg := @m_segs[0];
+  end
+  else if (dist >= m_segs[m_nsegs-1].d) then
+  begin
+    // Further than the last segment, skip.
+    if (m_nsegs >= MAX_LOCAL_SEGS) then
+      Exit;
+    // Last, trivial accept.
+    seg := @m_segs[m_nsegs];
+  end
+  else
+  begin
+    // Insert inbetween.
+    for i := 0 to m_nsegs - 1 do
+      if (dist <= m_segs[i].d) then
+        break;
+    tgt := i+1;
+    n := dtMin(m_nsegs-i, MAX_LOCAL_SEGS-tgt);
+    Assert(tgt+n <= MAX_LOCAL_SEGS);
+    if (n > 0) then
+      Move(m_segs[i], m_segs[tgt], sizeof(TSegment)*n);
+    seg := @m_segs[i];
+  end;
 
-	seg.d := dist;
-	Move(s^, seg.s[0], sizeof(Single)*6);
+  seg.d := dist;
+  Move(s^, seg.s[0], sizeof(Single)*6);
 
-	if (m_nsegs < MAX_LOCAL_SEGS) then
-		Inc(m_nsegs);
+  if (m_nsegs < MAX_LOCAL_SEGS) then
+    Inc(m_nsegs);
 end;
 
 procedure TdtLocalBoundary.update(ref: TdtPolyRef; const pos: PSingle; const collisionQueryRange: Single;
@@ -128,52 +128,52 @@ const MAX_SEGS_PER_POLY = DT_VERTS_PER_POLYGON*3;
 var segs: array [0..MAX_SEGS_PER_POLY*6-1] of Single; nsegs,j,k: Integer; s: PSingle; tseg, distSqr: Single;
 begin
 
-	if (ref = 0) then
-	begin
-		dtVset(@m_center[0], MaxSingle,MaxSingle,MaxSingle);
-		m_nsegs := 0;
-		m_npolys := 0;
-		Exit;
-	end;
+  if (ref = 0) then
+  begin
+    dtVset(@m_center[0], MaxSingle,MaxSingle,MaxSingle);
+    m_nsegs := 0;
+    m_npolys := 0;
+    Exit;
+  end;
 
-	dtVcopy(@m_center[0], pos);
+  dtVcopy(@m_center[0], pos);
 
-	// First query non-overlapping polygons.
-	navquery.findLocalNeighbourhood(ref, pos, collisionQueryRange,
-									 filter, @m_polys[0], nil, @m_npolys, MAX_LOCAL_POLYS);
+  // First query non-overlapping polygons.
+  navquery.findLocalNeighbourhood(ref, pos, collisionQueryRange,
+                   filter, @m_polys[0], nil, @m_npolys, MAX_LOCAL_POLYS);
 
-	// Secondly, store all polygon edges.
-	m_nsegs := 0;
-	nsegs := 0;
-	for j := 0 to m_npolys - 1 do
-	begin
-		navquery.getPolyWallSegments(m_polys[j], filter, @segs[0], nil, @nsegs, MAX_SEGS_PER_POLY);
-		for k := 0 to nsegs - 1 do
-		begin
-			s := @segs[k*6];
-			// Skip too distant segments.
-			distSqr := dtDistancePtSegSqr2D(pos, s, s+3, @tseg);
-			if (distSqr > Sqr(collisionQueryRange)) then
-				continue;
-			addSegment(distSqr, s);
-		end;
-	end;
+  // Secondly, store all polygon edges.
+  m_nsegs := 0;
+  nsegs := 0;
+  for j := 0 to m_npolys - 1 do
+  begin
+    navquery.getPolyWallSegments(m_polys[j], filter, @segs[0], nil, @nsegs, MAX_SEGS_PER_POLY);
+    for k := 0 to nsegs - 1 do
+    begin
+      s := @segs[k*6];
+      // Skip too distant segments.
+      distSqr := dtDistancePtSegSqr2D(pos, s, s+3, @tseg);
+      if (distSqr > Sqr(collisionQueryRange)) then
+        continue;
+      addSegment(distSqr, s);
+    end;
+  end;
 end;
 
 function TdtLocalBoundary.isValid(navquery: TdtNavMeshQuery; const filter: TdtQueryFilter): Boolean;
 var i: Integer;
 begin
-	if (m_npolys = 0) then
-		Exit(false);
+  if (m_npolys = 0) then
+    Exit(false);
 
-	// Check that all polygons still pass query filter.
-	for i := 0 to m_npolys - 1 do
-	begin
-		if (not navquery.isValidPolyRef(m_polys[i], filter)) then
-			Exit(false);
-	end;
+  // Check that all polygons still pass query filter.
+  for i := 0 to m_npolys - 1 do
+  begin
+    if (not navquery.isValidPolyRef(m_polys[i], filter)) then
+      Exit(false);
+  end;
 
-	Result := true;
+  Result := true;
 end;
 
 function TdtLocalBoundary.getCenter(): PSingle; begin Result := @m_center[0]; end;

@@ -569,14 +569,14 @@ const H_SCALE = 0.999; // Search heuristic scale.
 
 function dtAllocNavMeshQuery(): TdtNavMeshQuery;
 begin
-	Result := TdtNavMeshQuery.Create;
+  Result := TdtNavMeshQuery.Create;
 end;
 
 procedure dtFreeNavMeshQuery(var navmesh: TdtNavMeshQuery);
 begin
-	if (navmesh = nil) then Exit;
-	navMesh.Free;
-	navMesh := nil;
+  if (navmesh = nil) then Exit;
+  navMesh.Free;
+  navMesh := nil;
 end;
 
 //////////////////////////////////////////////////////////////////////////////////////////

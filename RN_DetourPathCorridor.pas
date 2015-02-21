@@ -37,39 +37,39 @@ type
     destructor Destroy; override;
 
     /// Allocates the corridor's path buffer.
-    ///  @param[in]		maxPath		The maximum path size the corridor can handle.
+    ///  @param[in]    maxPath    The maximum path size the corridor can handle.
     /// @return True if the initialization succeeded.
     function init(const maxPath: Integer): Boolean;
-	
+  
     /// Resets the path corridor to the specified position.
-    ///  @param[in]		ref		The polygon reference containing the position.
-    ///  @param[in]		pos		The new position in the corridor. [(x, y, z)]
+    ///  @param[in]    ref    The polygon reference containing the position.
+    ///  @param[in]    pos    The new position in the corridor. [(x, y, z)]
     procedure reset(ref: TdtPolyRef; const pos: PSingle);
-	
+  
     /// Finds the corners in the corridor from the position toward the target. (The straightened path.)
-    ///  @param[out]	cornerVerts		The corner vertices. [(x, y, z) * cornerCount] [Size: <= maxCorners]
-    ///  @param[out]	cornerFlags		The flag for each corner. [(flag) * cornerCount] [Size: <= maxCorners]
-    ///  @param[out]	cornerPolys		The polygon reference for each corner. [(polyRef) * cornerCount]
-    ///  								[Size: <= @p maxCorners]
-    ///  @param[in]		maxCorners		The maximum number of corners the buffers can hold.
-    ///  @param[in]		navquery		The query object used to build the corridor.
-    ///  @param[in]		filter			The filter to apply to the operation.
+    ///  @param[out]  cornerVerts    The corner vertices. [(x, y, z) * cornerCount] [Size: <= maxCorners]
+    ///  @param[out]  cornerFlags    The flag for each corner. [(flag) * cornerCount] [Size: <= maxCorners]
+    ///  @param[out]  cornerPolys    The polygon reference for each corner. [(polyRef) * cornerCount]
+    ///                  [Size: <= @p maxCorners]
+    ///  @param[in]    maxCorners    The maximum number of corners the buffers can hold.
+    ///  @param[in]    navquery    The query object used to build the corridor.
+    ///  @param[in]    filter      The filter to apply to the operation.
     /// @return The number of corners returned in the corner buffers. [0 <= value <= @p maxCorners]
     function findCorners(cornerVerts: PSingle; cornerFlags: PByte;
             cornerPolys: PdtPolyRef; const maxCorners: Integer;
             navquery: TdtNavMeshQuery; const filter: TdtQueryFilter): Integer;
 
     /// Attempts to optimize the path if the specified point is visible from the current position.
-    ///  @param[in]		next					The point to search toward. [(x, y, z])
-    ///  @param[in]		pathOptimizationRange	The maximum range to search. [Limit: > 0]
-    ///  @param[in]		navquery				The query object used to build the corridor.
-    ///  @param[in]		filter					The filter to apply to the operation.
+    ///  @param[in]    next          The point to search toward. [(x, y, z])
+    ///  @param[in]    pathOptimizationRange  The maximum range to search. [Limit: > 0]
+    ///  @param[in]    navquery        The query object used to build the corridor.
+    ///  @param[in]    filter          The filter to apply to the operation.
     procedure optimizePathVisibility(const next: PSingle; const pathOptimizationRange: Single;
                   navquery: TdtNavMeshQuery; const filter: TdtQueryFilter);
 
     /// Attempts to optimize the path using a local area search. (Partial replanning.)
-    ///  @param[in]		navquery	The query object used to build the corridor.
-    ///  @param[in]		filter		The filter to apply to the operation.
+    ///  @param[in]    navquery  The query object used to build the corridor.
+    ///  @param[in]    filter    The filter to apply to the operation.
     function optimizePathTopology(navquery: TdtNavMeshQuery; const filter: TdtQueryFilter): Boolean;
 
     function moveOverOffmeshConnection(offMeshConRef: TdtPolyRef; refs: PdtPolyRef;
@@ -82,31 +82,31 @@ type
                navquery: TdtNavMeshQuery; const filter: TdtQueryFilter): Boolean;
 
     /// Checks the current corridor path to see if its polygon references remain valid.
-    ///  @param[in]		maxLookAhead	The number of polygons from the beginning of the corridor to search.
-    ///  @param[in]		navquery		The query object used to build the corridor.
-    ///  @param[in]		filter			The filter to apply to the operation.
+    ///  @param[in]    maxLookAhead  The number of polygons from the beginning of the corridor to search.
+    ///  @param[in]    navquery    The query object used to build the corridor.
+    ///  @param[in]    filter      The filter to apply to the operation.
     function isValid(const maxLookAhead: Integer; navquery: TdtNavMeshQuery; const filter: TdtQueryFilter): Boolean;
 
     /// Moves the position from the current location to the desired location, adjusting the corridor
     /// as needed to reflect the change.
-    ///  @param[in]		npos		The desired new position. [(x, y, z)]
-    ///  @param[in]		navquery	The query object used to build the corridor.
-    ///  @param[in]		filter		The filter to apply to the operation.
+    ///  @param[in]    npos    The desired new position. [(x, y, z)]
+    ///  @param[in]    navquery  The query object used to build the corridor.
+    ///  @param[in]    filter    The filter to apply to the operation.
     /// @return Returns true if move succeeded.
     function movePosition(const npos: PSingle; navquery: TdtNavMeshQuery; const filter: TdtQueryFilter): Boolean;
 
     /// Moves the target from the curent location to the desired location, adjusting the corridor
     /// as needed to reflect the change.
-    ///  @param[in]		npos		The desired new target position. [(x, y, z)]
-    ///  @param[in]		navquery	The query object used to build the corridor.
-    ///  @param[in]		filter		The filter to apply to the operation.
+    ///  @param[in]    npos    The desired new target position. [(x, y, z)]
+    ///  @param[in]    navquery  The query object used to build the corridor.
+    ///  @param[in]    filter    The filter to apply to the operation.
     /// @return Returns true if move succeeded.
     function moveTargetPosition(const npos: PSingle; navquery: TdtNavMeshQuery; const filter: TdtQueryFilter): Boolean;
-	
+  
     /// Loads a new path and target into the corridor.
-    ///  @param[in]		target		The target location within the last polygon of the path. [(x, y, z)]
-    ///  @param[in]		path		The path corridor. [(polyRef) * @p npolys]
-    ///  @param[in]		npath		The number of polygons in the path.
+    ///  @param[in]    target    The target location within the last polygon of the path. [(x, y, z)]
+    ///  @param[in]    path    The path corridor. [(polyRef) * @p npolys]
+    ///  @param[in]    npath    The number of polygons in the path.
     procedure setCorridor(const target: PSingle; const path: PdtPolyRef; const npath: Integer);
 
     /// Gets the current position within the corridor. (In the first polygon.)
@@ -153,134 +153,134 @@ function dtMergeCorridorStartMoved(path: PdtPolyRef; const npath, maxPath: Integ
                   const visited: PdtPolyRef; const nvisited: Integer): Integer;
 var furthestPath, furthestVisited, i, j, req, orig, size: Integer; found: Boolean;
 begin
-	furthestPath := -1;
-	furthestVisited := -1;
+  furthestPath := -1;
+  furthestVisited := -1;
 
-	// Find furthest common polygon.
-	for i := npath-1 downto 0 do
-	begin
-		found := false;
-		for j := nvisited-1 downto 0 do
-		begin
-			if (path[i] = visited[j]) then
-			begin
-				furthestPath := i;
-				furthestVisited := j;
-				found := true;
-			end;
-		end;
-		if (found) then
-			break;
-	end;
+  // Find furthest common polygon.
+  for i := npath-1 downto 0 do
+  begin
+    found := false;
+    for j := nvisited-1 downto 0 do
+    begin
+      if (path[i] = visited[j]) then
+      begin
+        furthestPath := i;
+        furthestVisited := j;
+        found := true;
+      end;
+    end;
+    if (found) then
+      break;
+  end;
 
-	// If no intersection found just return current path.
-	if (furthestPath = -1) or (furthestVisited = -1) then
-		Exit(npath);
+  // If no intersection found just return current path.
+  if (furthestPath = -1) or (furthestVisited = -1) then
+    Exit(npath);
 
-	// Concatenate paths.
+  // Concatenate paths.
 
-	// Adjust beginning of the buffer to include the visited.
-	req := nvisited - furthestVisited;
-	orig := dtMin(furthestPath+1, npath);
-	size := dtMax(0, npath-orig);
-	if (req+size > maxPath) then
-		size := maxPath-req;
-	if (size <> 0) then
-		Move(path[orig], path[req], size*sizeof(TdtPolyRef));
+  // Adjust beginning of the buffer to include the visited.
+  req := nvisited - furthestVisited;
+  orig := dtMin(furthestPath+1, npath);
+  size := dtMax(0, npath-orig);
+  if (req+size > maxPath) then
+    size := maxPath-req;
+  if (size <> 0) then
+    Move(path[orig], path[req], size*sizeof(TdtPolyRef));
 
-	// Store visited
-	for i := 0 to req - 1 do
-		path[i] := visited[(nvisited-1)-i];
+  // Store visited
+  for i := 0 to req - 1 do
+    path[i] := visited[(nvisited-1)-i];
 
-	Result := req+size;
+  Result := req+size;
 end;
 
 function dtMergeCorridorEndMoved(path: PdtPolyRef; const npath, maxPath: Integer;
                 const visited: PdtPolyRef; const nvisited: Integer): Integer;
 var furthestPath, furthestVisited, i, j, req, orig, size, ppos, vpos, count: Integer; found: Boolean;
 begin
-	furthestPath := -1;
-	furthestVisited := -1;
+  furthestPath := -1;
+  furthestVisited := -1;
 
-	// Find furthest common polygon.
-	for i := 0 to npath - 1 do
-	begin
-		found := false;
-		for j := nvisited-1 downto 0 do
-		begin
-			if (path[i] = visited[j]) then
-			begin
-				furthestPath := i;
-				furthestVisited := j;
-				found := true;
-			end;
-		end;
-		if (found) then
-			break;
-	end;
+  // Find furthest common polygon.
+  for i := 0 to npath - 1 do
+  begin
+    found := false;
+    for j := nvisited-1 downto 0 do
+    begin
+      if (path[i] = visited[j]) then
+      begin
+        furthestPath := i;
+        furthestVisited := j;
+        found := true;
+      end;
+    end;
+    if (found) then
+      break;
+  end;
 
-	// If no intersection found just return current path.
-	if (furthestPath = -1) or (furthestVisited = -1) then
-		Exit(npath);
+  // If no intersection found just return current path.
+  if (furthestPath = -1) or (furthestVisited = -1) then
+    Exit(npath);
 
-	// Concatenate paths.
-	ppos := furthestPath+1;
-	vpos := furthestVisited+1;
-	count := dtMin(nvisited-vpos, maxPath-ppos);
-	Assert(ppos+count <= maxPath);
-	if (count <> 0) then
-		Move(visited[vpos], path[ppos], sizeof(TdtPolyRef)*count);
-	
-	Result := ppos+count;
+  // Concatenate paths.
+  ppos := furthestPath+1;
+  vpos := furthestVisited+1;
+  count := dtMin(nvisited-vpos, maxPath-ppos);
+  Assert(ppos+count <= maxPath);
+  if (count <> 0) then
+    Move(visited[vpos], path[ppos], sizeof(TdtPolyRef)*count);
+  
+  Result := ppos+count;
 end;
 
 function dtMergeCorridorStartShortcut(path: PdtPolyRef; const npath, maxPath: Integer;
                    const visited: PdtPolyRef; const nvisited: Integer): Integer;
 var furthestPath, furthestVisited, i, j, req, orig, size, ppos, vpos, count: Integer; found: Boolean;
 begin
-	furthestPath := -1;
-	furthestVisited := -1;
+  furthestPath := -1;
+  furthestVisited := -1;
 
-	// Find furthest common polygon.
-	for i := npath-1 downto 0 do
-	begin
-		found := false;
-		for j := nvisited-1 downto 0 do
-		begin
-			if (path[i] = visited[j]) then
-			begin
-				furthestPath := i;
-				furthestVisited := j;
-				found := true;
-			end;
-		end;
-		if (found) then
-			break;
-	end;
+  // Find furthest common polygon.
+  for i := npath-1 downto 0 do
+  begin
+    found := false;
+    for j := nvisited-1 downto 0 do
+    begin
+      if (path[i] = visited[j]) then
+      begin
+        furthestPath := i;
+        furthestVisited := j;
+        found := true;
+      end;
+    end;
+    if (found) then
+      break;
+  end;
 
-	// If no intersection found just return current path.
-	if (furthestPath = -1) or (furthestVisited = -1) then
-		Exit(npath);
+  // If no intersection found just return current path.
+  if (furthestPath = -1) or (furthestVisited = -1) then
+    Exit(npath);
 
-	// Concatenate paths.
+  // Concatenate paths.
 
-	// Adjust beginning of the buffer to include the visited.
-	req := furthestVisited;
-	if (req <= 0) then
-		Exit(npath);
+  // Adjust beginning of the buffer to include the visited.
+  req := furthestVisited;
+  if (req <= 0) then
+    Exit(npath);
 
-	orig := furthestPath;
-	size := dtMax(0, npath-orig);
-	if (req+size > maxPath) then
-		size := maxPath-req;
-	if (size <> 0) then
-		Move(path[orig], path[req], size*sizeof(TdtPolyRef));
+  orig := furthestPath;
+  size := dtMax(0, npath-orig);
+  if (req+size > maxPath) then
+    size := maxPath-req;
+  if (size <> 0) then
+    Move(path[orig], path[req], size*sizeof(TdtPolyRef));
 
-	// Store visited
-	for i := 0 to req - 1 do
-		path[i] := visited[i];
+  // Store visited
+  for i := 0 to req - 1 do
+    path[i] := visited[i];
 
-	Result := req+size;
+  Result := req+size;
 end;
 
 (**
@@ -328,14 +328,14 @@ may be needed.  E.g. If you move the target, check #getLastPoly() to see if it i
 constructor TdtPathCorridor.Create;
 begin
   inherited;
-	//m_path(0),
-	//m_npath(0),
-	//m_maxPath(0)
+  //m_path(0),
+  //m_npath(0),
+  //m_maxPath(0)
 end;
 
 destructor TdtPathCorridor.Destroy;
 begin
-	FreeMem(m_path);
+  FreeMem(m_path);
   inherited;
 end;
 
@@ -344,11 +344,11 @@ end;
 /// @warning Cannot be called more than once.
 function TdtPathCorridor.init(const maxPath: Integer): Boolean;
 begin
-	Assert(m_path = nil);
-	GetMem(m_path, sizeof(TdtPolyRef)*maxPath);
-	m_npath := 0;
-	m_maxPath := maxPath;
-	Result := true;
+  Assert(m_path = nil);
+  GetMem(m_path, sizeof(TdtPolyRef)*maxPath);
+  m_npath := 0;
+  m_maxPath := maxPath;
+  Result := true;
 end;
 
 /// @par
@@ -357,11 +357,11 @@ end;
 /// equal to the position.
 procedure TdtPathCorridor.reset(ref: TdtPolyRef; const pos: PSingle);
 begin
-	Assert(m_path <> nil);
-	dtVcopy(@m_pos[0], pos);
-	dtVcopy(@m_target[0], pos);
-	m_path[0] := ref;
-	m_npath := 1;
+  Assert(m_path <> nil);
+  dtVcopy(@m_pos[0], pos);
+  dtVcopy(@m_target[0], pos);
+  m_path[0] := ref;
+  m_npath := 1;
 end;
 
 (**
@@ -382,39 +382,39 @@ function TdtPathCorridor.findCorners(cornerVerts: PSingle; cornerFlags: PByte;
 const MIN_TARGET_DIST = 0.01;
 var ncorners, i: Integer;
 begin
-	Assert(m_path <> nil);
-	Assert(m_npath <> 0);
+  Assert(m_path <> nil);
+  Assert(m_npath <> 0);
 
-	ncorners := 0;
-	navquery.findStraightPath(@m_pos[0], @m_target[0], m_path, m_npath,
-							   cornerVerts, cornerFlags, cornerPolys, @ncorners, maxCorners);
-	
-	// Prune points in the beginning of the path which are too close.
-	while (ncorners <> 0) do
-	begin
-		if ((cornerFlags[0] and Byte(DT_STRAIGHTPATH_OFFMESH_CONNECTION)) <> 0) or
-			(dtVdist2DSqr(@cornerVerts[0], @m_pos[0]) > Sqr(MIN_TARGET_DIST)) then
-			break;
-		Dec(ncorners);
-		if (ncorners <> 0) then
-		begin
-			Move(cornerFlags[1], cornerFlags^, sizeof(Byte)*ncorners);
-			Move(cornerPolys[1], cornerPolys^, sizeof(TdtPolyRef)*ncorners);
-			Move(cornerVerts[3], cornerVerts^, sizeof(Single)*3*ncorners);
-		end;
-	end;
-	
-	// Prune points after an off-mesh connection.
-	for i := 0 to ncorners - 1 do
-	begin
-		if (cornerFlags[i] and Byte(DT_STRAIGHTPATH_OFFMESH_CONNECTION)) <> 0 then
-		begin
-			ncorners := i+1;
-			break;
-		end;
-	end;
-	
-	Result := ncorners;
+  ncorners := 0;
+  navquery.findStraightPath(@m_pos[0], @m_target[0], m_path, m_npath,
+                 cornerVerts, cornerFlags, cornerPolys, @ncorners, maxCorners);
+  
+  // Prune points in the beginning of the path which are too close.
+  while (ncorners <> 0) do
+  begin
+    if ((cornerFlags[0] and Byte(DT_STRAIGHTPATH_OFFMESH_CONNECTION)) <> 0) or
+      (dtVdist2DSqr(@cornerVerts[0], @m_pos[0]) > Sqr(MIN_TARGET_DIST)) then
+      break;
+    Dec(ncorners);
+    if (ncorners <> 0) then
+    begin
+      Move(cornerFlags[1], cornerFlags^, sizeof(Byte)*ncorners);
+      Move(cornerPolys[1], cornerPolys^, sizeof(TdtPolyRef)*ncorners);
+      Move(cornerVerts[3], cornerVerts^, sizeof(Single)*3*ncorners);
+    end;
+  end;
+  
+  // Prune points after an off-mesh connection.
+  for i := 0 to ncorners - 1 do
+  begin
+    if (cornerFlags[i] and Byte(DT_STRAIGHTPATH_OFFMESH_CONNECTION)) <> 0 then
+    begin
+      ncorners := i+1;
+      break;
+    end;
+  end;
+  
+  Result := ncorners;
 end;
 
 (**
@@ -440,29 +440,29 @@ procedure TdtPathCorridor.optimizePathVisibility(const next: PSingle; const path
 const MAX_RES = 32;
 var goal, delta, norm: array [0..2] of Single; dist, t: Single; res: array [0..MAX_RES-1] of TdtPolyRef; nres: Integer;
 begin
-	Assert(m_path <> nil);
+  Assert(m_path <> nil);
 
-	// Clamp the ray to max distance.
-	dtVcopy(@goal[0], next);
-	dist := dtVdist2D(@m_pos[0], @goal[0]);
+  // Clamp the ray to max distance.
+  dtVcopy(@goal[0], next);
+  dist := dtVdist2D(@m_pos[0], @goal[0]);
 
-	// If too close to the goal, do not try to optimize.
-	if (dist < 0.01) then
-		Exit;
+  // If too close to the goal, do not try to optimize.
+  if (dist < 0.01) then
+    Exit;
 
-	// Overshoot a little. This helps to optimize open fields in tiled meshes.
-	dist := dtMin(dist+0.01, pathOptimizationRange);
+  // Overshoot a little. This helps to optimize open fields in tiled meshes.
+  dist := dtMin(dist+0.01, pathOptimizationRange);
 
-	// Adjust ray length.
-	dtVsub(@delta[0], @goal[0], @m_pos[0]);
-	dtVmad(@goal[0], @m_pos[0], @delta[0], pathOptimizationRange/dist);
+  // Adjust ray length.
+  dtVsub(@delta[0], @goal[0], @m_pos[0]);
+  dtVmad(@goal[0], @m_pos[0], @delta[0], pathOptimizationRange/dist);
 
-	nres := 0;
-	navquery.raycast(m_path[0], @m_pos[0], @goal[0], filter, @t, @norm[0], @res[0], @nres, MAX_RES);
-	if (nres > 1) and (t > 0.99) then
-	begin
-		m_npath := dtMergeCorridorStartShortcut(m_path, m_npath, m_maxPath, @res[0], nres);
-	end;
+  nres := 0;
+  navquery.raycast(m_path[0], @m_pos[0], @goal[0], filter, @t, @norm[0], @res[0], @nres, MAX_RES);
+  if (nres > 1) and (t > 0.99) then
+  begin
+    m_npath := dtMergeCorridorStartShortcut(m_path, m_npath, m_maxPath, @res[0], nres);
+  end;
 end;
 
 (**
@@ -480,25 +480,25 @@ const MAX_ITER = 32;
 const MAX_RES = 32;
 var res: array [0..MAX_RES-1] of TdtPolyRef; nres: Integer; status: TdtStatus;
 begin
-	Assert(navquery <> nil);
-	Assert(filter <> nil);
-	Assert(m_path <> nil);
+  Assert(navquery <> nil);
+  Assert(filter <> nil);
+  Assert(m_path <> nil);
 
-	if (m_npath < 3) then
-		Exit(false);
+  if (m_npath < 3) then
+    Exit(false);
 
-	nres := 0;
-	navquery.initSlicedFindPath(m_path[0], m_path[m_npath-1], @m_pos[0], @m_target[0], filter);
-	navquery.updateSlicedFindPath(MAX_ITER, nil);
-	status := navquery.finalizeSlicedFindPathPartial(m_path, m_npath, @res[0], @nres, MAX_RES);
+  nres := 0;
+  navquery.initSlicedFindPath(m_path[0], m_path[m_npath-1], @m_pos[0], @m_target[0], filter);
+  navquery.updateSlicedFindPath(MAX_ITER, nil);
+  status := navquery.finalizeSlicedFindPathPartial(m_path, m_npath, @res[0], @nres, MAX_RES);
 
-	if dtStatusSucceed(status) and (nres > 0) then
-	begin
-		m_npath := dtMergeCorridorStartShortcut(m_path, m_npath, m_maxPath, @res[0], nres);
-		Exit(true);
-	end;
+  if dtStatusSucceed(status) and (nres > 0) then
+  begin
+    m_npath := dtMergeCorridorStartShortcut(m_path, m_npath, m_maxPath, @res[0], nres);
+    Exit(true);
+  end;
 
-	Result := false;
+  Result := false;
 end;
 
 function TdtPathCorridor.moveOverOffmeshConnection(offMeshConRef: TdtPolyRef; refs: PdtPolyRef;
@@ -506,44 +506,44 @@ function TdtPathCorridor.moveOverOffmeshConnection(offMeshConRef: TdtPolyRef; re
                      navquery: TdtNavMeshQuery): Boolean;
 var prevRef, polyRef: TdtPolyRef; npos, i: Integer; nav: TdtNavMesh; status: TdtStatus;
 begin
-	Assert(navquery <> nil);
-	Assert(m_path <> nil);
-	Assert(m_npath <> 0);
+  Assert(navquery <> nil);
+  Assert(m_path <> nil);
+  Assert(m_npath <> 0);
 
-	// Advance the path up to and over the off-mesh connection.
+  // Advance the path up to and over the off-mesh connection.
   prevRef := 0; polyRef := m_path[0];
-	npos := 0;
-	while (npos < m_npath) and (polyRef <> offMeshConRef) do
-	begin
-		prevRef := polyRef;
-		polyRef := m_path[npos];
-		Inc(npos);
-	end;
-	if (npos = m_npath) then
-	begin
-		// Could not find offMeshConRef
-		Exit(false);
-	end;
+  npos := 0;
+  while (npos < m_npath) and (polyRef <> offMeshConRef) do
+  begin
+    prevRef := polyRef;
+    polyRef := m_path[npos];
+    Inc(npos);
+  end;
+  if (npos = m_npath) then
+  begin
+    // Could not find offMeshConRef
+    Exit(false);
+  end;
 
-	// Prune path
-	for i := npos to m_npath - 1 do
-		m_path[i-npos] := m_path[i];
-	Dec(m_npath, npos);
+  // Prune path
+  for i := npos to m_npath - 1 do
+    m_path[i-npos] := m_path[i];
+  Dec(m_npath, npos);
 
-	refs[0] := prevRef;
-	refs[1] := polyRef;
+  refs[0] := prevRef;
+  refs[1] := polyRef;
 
-	nav := navquery.getAttachedNavMesh;
-	Assert(nav <> nil);
+  nav := navquery.getAttachedNavMesh;
+  Assert(nav <> nil);
 
   status := nav.getOffMeshConnectionPolyEndPoints(refs[0], refs[1], startPos, endPos);
-	if (dtStatusSucceed(status)) then
-	begin
-		dtVcopy(@m_pos[0], endPos);
-		Exit(true);
-	end;
+  if (dtStatusSucceed(status)) then
+  begin
+    dtVcopy(@m_pos[0], endPos);
+    Exit(true);
+  end;
 
-	Result := false;
+  Result := false;
 end;
 
 (**
@@ -566,25 +566,25 @@ const MAX_VISITED = 16;
 var reslt: array [0..2] of Single; visited: array [0..MAX_VISITED-1] of TdtPolyRef; nvisited: Integer; status: TdtStatus;
 h: Single;
 begin
-	Assert(m_path <> nil);
-	Assert(m_npath <> 0);
+  Assert(m_path <> nil);
+  Assert(m_npath <> 0);
 
-	// Move along navmesh and update new position.
-	nvisited := 0;
-	status := navquery.moveAlongSurface(m_path[0], @m_pos[0], npos, filter,
-												 @reslt[0], @visited[0], @nvisited, MAX_VISITED);
-	if (dtStatusSucceed(status)) then
+  // Move along navmesh and update new position.
+  nvisited := 0;
+  status := navquery.moveAlongSurface(m_path[0], @m_pos[0], npos, filter,
+                         @reslt[0], @visited[0], @nvisited, MAX_VISITED);
+  if (dtStatusSucceed(status)) then
   begin
-		m_npath := dtMergeCorridorStartMoved(m_path, m_npath, m_maxPath, @visited[0], nvisited);
+    m_npath := dtMergeCorridorStartMoved(m_path, m_npath, m_maxPath, @visited[0], nvisited);
 
-		// Adjust the position to stay on top of the navmesh.
-		h := m_pos[1];
-		navquery.getPolyHeight(m_path[0], @reslt[0], @h);
-		reslt[1] := h;
-		dtVcopy(@m_pos[0], @reslt[0]);
-		Exit(true);
-	end;
-	Result := false;
+    // Adjust the position to stay on top of the navmesh.
+    h := m_pos[1];
+    navquery.getPolyHeight(m_path[0], @reslt[0], @h);
+    reslt[1] := h;
+    dtVcopy(@m_pos[0], @reslt[0]);
+    Exit(true);
+  end;
+  Result := false;
 end;
 
 (**
@@ -604,27 +604,27 @@ function TdtPathCorridor.moveTargetPosition(const npos: PSingle; navquery: TdtNa
 const MAX_VISITED = 16;
 var reslt: array [0..2] of Single; visited: array [0..MAX_VISITED-1] of TdtPolyRef; nvisited: Integer; status: TdtStatus;
 begin
-	Assert(m_path <> nil);
-	Assert(m_npath <> 0);
+  Assert(m_path <> nil);
+  Assert(m_npath <> 0);
 
-	// Move along navmesh and update new position.
-	nvisited := 0;
-	status := navquery.moveAlongSurface(m_path[m_npath-1], @m_target[0], npos, filter,
-												 @reslt[0], @visited[0], @nvisited, MAX_VISITED);
-	if (dtStatusSucceed(status)) then
-	begin
-		m_npath := dtMergeCorridorEndMoved(m_path, m_npath, m_maxPath, @visited[0], nvisited);
-		// TODO: should we do that?
-		// Adjust the position to stay on top of the navmesh.
-		(*	float h := m_target[1];
-		 navquery.getPolyHeight(m_path[m_npath-1], reslt, &h);
-		 reslt[1] := h;*)
+  // Move along navmesh and update new position.
+  nvisited := 0;
+  status := navquery.moveAlongSurface(m_path[m_npath-1], @m_target[0], npos, filter,
+                         @reslt[0], @visited[0], @nvisited, MAX_VISITED);
+  if (dtStatusSucceed(status)) then
+  begin
+    m_npath := dtMergeCorridorEndMoved(m_path, m_npath, m_maxPath, @visited[0], nvisited);
+    // TODO: should we do that?
+    // Adjust the position to stay on top of the navmesh.
+    (*  float h := m_target[1];
+     navquery.getPolyHeight(m_path[m_npath-1], reslt, &h);
+     reslt[1] := h;*)
 
-		dtVcopy(@m_target[0], @reslt[0]);
+    dtVcopy(@m_target[0], @reslt[0]);
 
-		Exit(true);
-	end;
-	Result := false;
+    Exit(true);
+  end;
+  Result := false;
 end;
 
 /// @par
@@ -635,74 +635,74 @@ end;
 /// @warning The size of the path must not exceed the size of corridor's path buffer set during #init().
 procedure TdtPathCorridor.setCorridor(const target: PSingle; const path: PdtPolyRef; const npath: Integer);
 begin
-	Assert(m_path <> nil);
-	Assert(npath > 0);
-	Assert(npath < m_maxPath);
-	
-	dtVcopy(@m_target[0], target);
-	Move(path^, m_path^, sizeof(TdtPolyRef)*npath);
-	m_npath := npath;
+  Assert(m_path <> nil);
+  Assert(npath > 0);
+  Assert(npath < m_maxPath);
+  
+  dtVcopy(@m_target[0], target);
+  Move(path^, m_path^, sizeof(TdtPolyRef)*npath);
+  m_npath := npath;
 end;
 
 function TdtPathCorridor.fixPathStart(safeRef: TdtPolyRef; const safePos: PSingle): Boolean;
 begin
-	Assert(m_path <> nil);
+  Assert(m_path <> nil);
 
-	dtVcopy(@m_pos[0], safePos);
-	if (m_npath < 3) and (m_npath > 0) then
-	begin
-		m_path[2] := m_path[m_npath-1];
-		m_path[0] := safeRef;
-		m_path[1] := 0;
-		m_npath := 3;
-	end
-	else
-	begin
-		m_path[0] := safeRef;
-		m_path[1] := 0;
-	end;
+  dtVcopy(@m_pos[0], safePos);
+  if (m_npath < 3) and (m_npath > 0) then
+  begin
+    m_path[2] := m_path[m_npath-1];
+    m_path[0] := safeRef;
+    m_path[1] := 0;
+    m_npath := 3;
+  end
+  else
+  begin
+    m_path[0] := safeRef;
+    m_path[1] := 0;
+  end;
 
-	Result := true;
+  Result := true;
 end;
 
 function TdtPathCorridor.trimInvalidPath(safeRef: TdtPolyRef; const safePos: PSingle;
                navquery: TdtNavMeshQuery; const filter: TdtQueryFilter): Boolean;
 var n: Integer; tgt: array [0..2] of Single;
 begin
-	Assert(navquery <> nil);
-	Assert(filter <> nil);
-	Assert(m_path <> nil);
+  Assert(navquery <> nil);
+  Assert(filter <> nil);
+  Assert(m_path <> nil);
 
-	// Keep valid path as far as possible.
-	n := 0;
-	while (n < m_npath) and (navquery.isValidPolyRef(m_path[n], filter)) do
+  // Keep valid path as far as possible.
+  n := 0;
+  while (n < m_npath) and (navquery.isValidPolyRef(m_path[n], filter)) do
   begin
-		Inc(n);
-	end;
+    Inc(n);
+  end;
 
-	if (n = m_npath) then
-	begin
-		// All valid, no need to fix.
-		Exit(true);
-	end
-	else if (n = 0) then
-	begin
-		// The first polyref is bad, use current safe values.
-		dtVcopy(@m_pos[0], safePos);
-		m_path[0] := safeRef;
-		m_npath := 1;
-	end
-	else
-	begin
-		// The path is partially usable.
-		m_npath := n;
-	end;
+  if (n = m_npath) then
+  begin
+    // All valid, no need to fix.
+    Exit(true);
+  end
+  else if (n = 0) then
+  begin
+    // The first polyref is bad, use current safe values.
+    dtVcopy(@m_pos[0], safePos);
+    m_path[0] := safeRef;
+    m_npath := 1;
+  end
+  else
+  begin
+    // The path is partially usable.
+    m_npath := n;
+  end;
 
-	// Clamp target pos to last poly
-	dtVcopy(@tgt[0], @m_target[0]);
-	navquery.closestPointOnPolyBoundary(m_path[m_npath-1], @tgt[0], @m_target[0]);
+  // Clamp target pos to last poly
+  dtVcopy(@tgt[0], @m_target[0]);
+  navquery.closestPointOnPolyBoundary(m_path[m_npath-1], @tgt[0], @m_target[0]);
 
-	Result := true;
+  Result := true;
 end;
 
 /// @par
@@ -712,15 +712,15 @@ end;
 function TdtPathCorridor.isValid(const maxLookAhead: Integer; navquery: TdtNavMeshQuery; const filter: TdtQueryFilter): Boolean;
 var n, i: Integer;
 begin
-	// Check that all polygons still pass query filter.
-	n := dtMin(m_npath, maxLookAhead);
-	for i := 0 to n - 1 do
-	begin
-		if (not navquery.isValidPolyRef(m_path[i], filter)) then
-			Exit(false);
-	end;
+  // Check that all polygons still pass query filter.
+  n := dtMin(m_npath, maxLookAhead);
+  for i := 0 to n - 1 do
+  begin
+    if (not navquery.isValidPolyRef(m_path[i], filter)) then
+      Exit(false);
+  end;
 
-	Result := true;
+  Result := true;
 end;
 
 function TdtPathCorridor.getPos(): PSingle; begin Result := @m_pos[0]; end;
