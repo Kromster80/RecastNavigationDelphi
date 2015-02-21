@@ -104,8 +104,20 @@
             <Form>FramePruneTool</Form>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
+        <DCCReference Include="Unit_FrameSampleSoloMesh.pas">
+            <Form>FrameSampleSoloMesh</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Unit_FrameSampleTileMesh.pas">
+            <Form>FrameSampleTileMesh</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
         <DCCReference Include="Unit_FrameTesterTool.pas">
             <Form>FrameTesterTool</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Unit_FrameTileTool.pas">
+            <Form>FrameTileTool</Form>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="RN_ChunkyTriMesh.pas"/>
@@ -131,6 +143,7 @@
         <DCCReference Include="RN_MeshLoaderObj.pas"/>
         <DCCReference Include="RN_NavMeshPruneTool.pas"/>
         <DCCReference Include="RN_NavMeshTesterTool.pas"/>
+        <DCCReference Include="RN_NavMeshTileTool.pas"/>
         <DCCReference Include="RN_PerfTimer.pas"/>
         <DCCReference Include="RN_Recast.pas"/>
         <DCCReference Include="RN_RecastAlloc.pas"/>
@@ -149,6 +162,7 @@
         <DCCReference Include="RN_Sample.pas"/>
         <DCCReference Include="RN_SampleInterfaces.pas"/>
         <DCCReference Include="RN_SampleSoloMesh.pas"/>
+        <DCCReference Include="RN_SampleTileMesh.pas"/>
         <DCCReference Include="RN_ValueHistory.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>

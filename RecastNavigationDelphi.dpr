@@ -5,7 +5,10 @@ uses
   Unit_Form in 'Unit_Form.pas' {Form1},
   Unit_FrameCrowdTool in 'Unit_FrameCrowdTool.pas' {FrameCrowdTool: TFrame},
   Unit_FramePruneTool in 'Unit_FramePruneTool.pas' {FramePruneTool: TFrame},
+  Unit_FrameSampleSoloMesh in 'Unit_FrameSampleSoloMesh.pas' {FrameSampleSoloMesh: TFrame},
+  Unit_FrameSampleTileMesh in 'Unit_FrameSampleTileMesh.pas' {FrameSampleTileMesh: TFrame},
   Unit_FrameTesterTool in 'Unit_FrameTesterTool.pas' {FrameTesterTool: TFrame},
+  Unit_FrameTileTool in 'Unit_FrameTileTool.pas' {FrameTileTool: TFrame},
   RN_ChunkyTriMesh in 'RN_ChunkyTriMesh.pas',
   RN_CrowdTool in 'RN_CrowdTool.pas',
   RN_DebugDraw in 'RN_DebugDraw.pas',
@@ -29,6 +32,7 @@ uses
   RN_MeshLoaderObj in 'RN_MeshLoaderObj.pas',
   RN_NavMeshPruneTool in 'RN_NavMeshPruneTool.pas',
   RN_NavMeshTesterTool in 'RN_NavMeshTesterTool.pas',
+  RN_NavMeshTileTool in 'RN_NavMeshTileTool.pas',
   RN_PerfTimer in 'RN_PerfTimer.pas',
   RN_Recast in 'RN_Recast.pas',
   RN_RecastAlloc in 'RN_RecastAlloc.pas',
@@ -47,6 +51,7 @@ uses
   RN_Sample in 'RN_Sample.pas',
   RN_SampleInterfaces in 'RN_SampleInterfaces.pas',
   RN_SampleSoloMesh in 'RN_SampleSoloMesh.pas',
+  RN_SampleTileMesh in 'RN_SampleTileMesh.pas',
   RN_ValueHistory in 'RN_ValueHistory.pas';
 
 {$R *.res}

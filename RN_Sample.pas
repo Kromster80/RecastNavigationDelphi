@@ -129,7 +129,7 @@ type
     procedure setToolState(&type: TSampleToolType; s: TSampleToolState); { m_toolStates[type] = s; }
 
     procedure handleSettings(); virtual;
-    procedure handleTools(); virtual;
+    procedure handleTools(Sender: TObject); virtual;
     procedure handleDebugMode(); virtual;
     procedure handleClick(const s, p: PSingle; shift: Boolean); virtual;
     procedure handleMenu(Sender: TObject); virtual;
@@ -211,7 +211,7 @@ procedure TSample.handleSettings();
 begin
 end;
 
-procedure TSample.handleTools();
+procedure TSample.handleTools(Sender: TObject);
 begin
 end;
 

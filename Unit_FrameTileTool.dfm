@@ -1,23 +1,23 @@
-object FramePruneTool: TFramePruneTool
+object FrameTileTool: TFrameTileTool
   Left = 0
   Top = 0
   Width = 249
   Height = 240
   TabOrder = 0
-  object btnClearSelection: TButton
+  object btnCreateAll: TButton
     Left = 16
     Top = 16
     Width = 115
     Height = 25
-    Caption = 'Clear Selection'
+    Caption = 'Create All'
     TabOrder = 0
   end
-  object btnPruneUnselected: TButton
+  object btnRemoveAll: TButton
     Left = 16
     Top = 64
     Width = 115
     Height = 25
-    Caption = 'Prune Unselected'
+    Caption = 'Remove All'
     TabOrder = 1
   end
 end

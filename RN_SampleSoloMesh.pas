@@ -20,34 +20,19 @@
 unit RN_SampleSoloMesh;
 interface
 uses
-  Classes, Controls, Math, OpenGL, StrUtils, SysUtils,
+  Classes, Controls, Math, OpenGL, StrUtils, SysUtils, ExtCtrls,
+  Unit_FrameSampleSoloMesh,
   RN_Helper, RN_InputGeom, RN_Sample, RN_Recast, RN_RecastHelper;
 
 type
-  TDrawMode = (
-    DRAWMODE_NAVMESH,
-    DRAWMODE_NAVMESH_TRANS,
-    DRAWMODE_NAVMESH_BVTREE,
-    DRAWMODE_NAVMESH_NODES,
-    DRAWMODE_NAVMESH_INVIS,
-    DRAWMODE_MESH,
-    DRAWMODE_VOXELS,
-    DRAWMODE_VOXELS_WALKABLE,
-    DRAWMODE_COMPACT,
-    DRAWMODE_COMPACT_DISTANCE,
-    DRAWMODE_COMPACT_REGIONS,
-    DRAWMODE_REGION_CONNECTIONS,
-    DRAWMODE_RAW_CONTOURS,
-    DRAWMODE_BOTH_CONTOURS,
-    DRAWMODE_CONTOURS,
-    DRAWMODE_POLYMESH,
-    DRAWMODE_POLYMESH_DETAIL,
-    MAX_DRAWMODE
-  );
-
   TSample_SoloMesh = class(TSample)
   protected
-    fOwner: TWinControl;
+    fSampleFrame: TWinControl;
+    fToolFrame: TWinControl;
+    fFrame: TFrameSampleSoloMesh;
+    fTools: TRadioGroup;
+    fUpdateUI: Boolean;
+
     m_keepInterResults: Boolean;
     m_totalBuildTimeMs: Single;
 
@@ -55,26 +40,48 @@ type
     m_solid: TrcHeightfield;
     m_cfg: TrcConfig;
 
+    type
+    TDrawMode = (
+      DRAWMODE_NAVMESH,
+      DRAWMODE_NAVMESH_TRANS,
+      DRAWMODE_NAVMESH_BVTREE,
+      DRAWMODE_NAVMESH_NODES,
+      DRAWMODE_NAVMESH_INVIS,
+      DRAWMODE_MESH,
+      DRAWMODE_VOXELS,
+      DRAWMODE_VOXELS_WALKABLE,
+      DRAWMODE_COMPACT,
+      DRAWMODE_COMPACT_DISTANCE,
+      DRAWMODE_COMPACT_REGIONS,
+      DRAWMODE_REGION_CONNECTIONS,
+      DRAWMODE_RAW_CONTOURS,
+      DRAWMODE_BOTH_CONTOURS,
+      DRAWMODE_CONTOURS,
+      DRAWMODE_POLYMESH,
+      DRAWMODE_POLYMESH_DETAIL,
+      MAX_DRAWMODE
+    );
+    var
     m_drawMode: TDrawMode;
 
+    function getToolItems: string;
+    function getDrawModeItems: string;
     procedure cleanup();
   public
     m_chf: TrcCompactHeightfield;
     m_cset: TrcContourSet;
     m_pmesh: TrcPolyMesh;
     m_dmesh: TrcPolyMeshDetail;
-    property drawMode: TDrawMode read m_drawMode write m_drawMode;
-    property keepIntermediateResults: Boolean read m_keepInterResults write m_keepInterResults;
-    function getToolItems: string;
-    function getDrawModeItems: string;
+
     procedure setToolType(aType: TSampleToolType);
 
-    constructor Create(aOwner: TWinControl);
+    constructor Create(aSampleFrame, aToolFrame: TWinControl; aTools: TRadioGroup);
     destructor Destroy; override;
 
     procedure handleSettings(); override;
-    procedure handleTools(); override;
+    procedure handleTools(Sender: TObject); override;
     procedure handleDebugMode(); override;
+    procedure handleGUI(Sender: TObject);
 
     procedure handleRender(); override;
     procedure handleRenderOverlay(proj, model: PDouble; view: PInteger); override;
@@ -89,22 +96,49 @@ uses
   RN_RecastDebugDraw, RN_RecastArea, RN_RecastContour, RN_RecastFilter, RN_RecastMesh, RN_RecastMeshDetail,
   RN_RecastRasterization, RN_RecastRegion, RN_SampleInterfaces;
 
-constructor TSample_SoloMesh.Create(aOwner: TWinControl);
+constructor TSample_SoloMesh.Create(aSampleFrame, aToolFrame: TWinControl; aTools: TRadioGroup);
 begin
   inherited Create;
 
-  fOwner := aOwner;
-
   m_keepInterResults := true;
-
   m_drawMode := DRAWMODE_NAVMESH;
 
-  setTool(TNavMeshTesterTool.Create(fOwner));
+  fSampleFrame := aSampleFrame;
+  fToolFrame := aToolFrame;
+  fTools := aTools;
+  fTools.OnClick := handleTools;
+
+  fFrame := TFrameSampleSoloMesh.Create(fSampleFrame);
+  fFrame.Align := alClient;
+  fFrame.Parent := fSampleFrame;
+  fFrame.Visible := True;
+
+  fFrame.seCellSize.OnChange := handleGUI;
+  fFrame.seMaxSampleError.OnChange := handleGUI;
+  fFrame.seSampleDistance.OnChange := handleGUI;
+  fFrame.seVertsPerPoly.OnChange := handleGUI;
+  fFrame.seMaxEdgeError.OnChange := handleGUI;
+  fFrame.seMaxEdgeLength.OnChange := handleGUI;
+  fFrame.rgPartitioning.OnClick := handleGUI;
+  fFrame.seMergedRegionSize.OnChange := handleGUI;
+  fFrame.seMinRegionSize.OnChange := handleGUI;
+  fFrame.seMaxSlope.OnChange := handleGUI;
+  fFrame.seMaxClimb.OnChange := handleGUI;
+  fFrame.seAgentRadius.OnChange := handleGUI;
+  fFrame.seAgentHeight.OnChange := handleGUI;
+  fFrame.seCellHeight.OnChange := handleGUI;
+  fFrame.chkKeepIntermediateResults.OnClick := handleGUI;
+  fFrame.rgDrawMode.OnClick := handleGUI;
+
+  handleGUI(nil);
+
+  setTool(TNavMeshTesterTool.Create(fToolFrame));
 end;
 
 destructor TSample_SoloMesh.Destroy;
 begin
   cleanup();
+  fFrame.Free;
 
   inherited;
 end;
@@ -127,9 +161,9 @@ begin
   //
 end;
 
-procedure TSample_SoloMesh.handleTools;
+procedure TSample_SoloMesh.handleTools(Sender: TObject);
 begin
-  // Delphi. Refactored
+  setToolType(TSampleToolType(fTools.ItemIndex));
 end;
 
 procedure TSample_SoloMesh.setToolType(aType: TSampleToolType);
@@ -139,11 +173,11 @@ begin
 
   case aType of
     TOOL_NONE:                setTool(nil);
-    TOOL_NAVMESH_TESTER:      setTool(TNavMeshTesterTool.Create(fOwner));
-    TOOL_NAVMESH_PRUNE:       setTool(TNavMeshPruneTool.Create(fOwner));
+    TOOL_NAVMESH_TESTER:      setTool(TNavMeshTesterTool.Create(fToolFrame));
+    TOOL_NAVMESH_PRUNE:       setTool(TNavMeshPruneTool.Create(fToolFrame));
     //todo: TOOL_OFFMESH_CONNECTION:  setTool(TOffMeshConnectionTool.Create);
     //todo: TOOL_CONVEX_VOLUME:       setTool(TConvexVolumeTool.Create);
-    TOOL_CROWD:               setTool(TCrowdTool.Create(fOwner));
+    TOOL_CROWD:               setTool(TCrowdTool.Create(fToolFrame));
   else
     setTool(nil);
   end;
@@ -168,6 +202,66 @@ end;
 procedure TSample_SoloMesh.handleDebugMode();
 begin
   // Delphi. Refactored
+end;
+
+procedure TSample_SoloMesh.handleGUI(Sender: TObject);
+var
+  I: Integer;
+begin
+  if fUpdateUI then Exit;
+
+  if Sender = nil then
+  begin
+    fUpdateUI := True;
+    fFrame.seCellSize.Value := Round(m_cellSize * 10);
+    fFrame.seCellHeight.Value := Round(m_cellHeight * 10);
+    fFrame.seAgentHeight.Value := Round(m_agentHeight * 10);
+    fFrame.seAgentRadius.Value := Round(m_agentRadius * 10);
+    fFrame.seMaxClimb.Value := Round(m_agentMaxClimb * 10);
+    fFrame.seMaxSlope.Value := Round(m_agentMaxSlope);
+
+    fFrame.seMinRegionSize.Value := Round(m_regionMinSize);
+    fFrame.seMergedRegionSize.Value := Round(m_regionMergeSize);
+    fFrame.seMaxEdgeLength.Value := Round(m_edgeMaxLen);
+    fFrame.seMaxEdgeError.Value := Round(m_edgeMaxError * 10);
+    fFrame.seVertsPerPoly.Value := Round(m_vertsPerPoly);
+    fFrame.seSampleDistance.Value := Round(m_detailSampleDist);
+    fFrame.seMaxSampleError.Value := Round(m_detailSampleMaxError);
+    fFrame.rgPartitioning.ItemIndex := Byte(m_partitionType);
+
+    fFrame.chkKeepIntermediateResults.Checked := m_keepInterResults;
+
+    fFrame.rgDrawMode.Items.Text := getDrawModeItems;
+    for I := 0 to fFrame.rgDrawMode.Items.Count - 1 do
+      fFrame.rgDrawMode.Buttons[I].Enabled := RightStr(fFrame.rgDrawMode.Items[I], 1) <> ' ';
+    fFrame.rgDrawMode.ItemIndex := Byte(m_drawMode);
+
+    fTools.Items.Text := getToolItems;
+    for I := 0 to fTools.Items.Count - 1 do
+      fTools.Buttons[I].Enabled := RightStr(fTools.Items[I], 1) <> ' ';
+    fTools.ItemIndex := 0;
+
+    fUpdateUI := False;
+    Exit;
+  end;
+
+  m_drawMode := TDrawMode(fFrame.rgDrawMode.ItemIndex);
+
+  m_cellSize := fFrame.seCellSize.Value / 10;
+  m_cellHeight := fFrame.seCellHeight.Value / 10;
+  m_agentHeight := fFrame.seAgentHeight.Value / 10;
+  m_agentRadius := fFrame.seAgentRadius.Value / 10;
+  m_agentMaxClimb := fFrame.seMaxClimb.Value / 10;
+  m_agentMaxSlope := fFrame.seMaxSlope.Value;
+
+  m_regionMinSize := fFrame.seMinRegionSize.Value;
+  m_regionMergeSize := fFrame.seMergedRegionSize.Value;
+  m_edgeMaxLen := fFrame.seMaxEdgeLength.Value;
+  m_edgeMaxError := fFrame.seMaxEdgeError.Value / 10;
+  m_vertsPerPoly := fFrame.seVertsPerPoly.Value;
+  m_detailSampleDist := fFrame.seSampleDistance.Value;
+  m_detailSampleMaxError := fFrame.seMaxSampleError.Value;
+  m_partitionType := TSamplePartitionType(fFrame.rgPartitioning.ItemIndex);
 end;
 
 function TSample_SoloMesh.getDrawModeItems: string;
@@ -222,7 +316,7 @@ var dd: TDebugDrawGL; texScale: Single; bmin, bmax: PSingle;
 begin
   inherited;
 
-  if (m_geom.getMesh = nil) then
+  if (m_geom = nil) or (m_geom.getMesh = nil) then
     Exit;
 
   dd := TDebugDrawGL.Create;
@@ -466,7 +560,7 @@ begin
   rcFilterLedgeSpans(m_ctx, m_cfg.walkableHeight, m_cfg.walkableClimb, m_solid);
   rcFilterWalkableLowHeightSpans(m_ctx, m_cfg.walkableHeight, m_solid);
 
-  duDumpHeightfield(@m_solid, 'dump_3_hf_d.txt');
+  //duDumpHeightfield(@m_solid, 'dump_3_hf_d.txt');
 
   //
   // Step 4. Partition walkable surface to simple regions.
@@ -481,6 +575,9 @@ begin
     Exit(false);
   end;
 
+  //duDumpCompactHeightfield(@m_chf, 'chf.txt');
+  //duReadCompactHeightfield(@m_chf, 'chf.txt');
+
   if (not m_keepInterResults) then
   begin
     //rcFreeHeightField(m_solid);
@@ -488,11 +585,11 @@ begin
   end;
 
   // Erode the walkable area by agent radius.
-  if (not rcErodeWalkableArea(m_ctx, m_cfg.walkableRadius, @m_chf)) then
+  {if (not rcErodeWalkableArea(m_ctx, m_cfg.walkableRadius, @m_chf)) then
   begin
     m_ctx.log(RC_LOG_ERROR, 'buildNavigation: Could not erode.');
     Exit(false);
-  end;
+  end;}
 
   // (Optional) Mark areas.
   vols := m_geom.getConvexVolumes;
@@ -625,7 +722,9 @@ begin
 
     // Update poly flags from areas.
     for i := 0 to m_pmesh.npolys - 1 do
-    begin
+      m_pmesh.flags[i] := m_pmesh.areas[i];
+
+    {begin
       if (m_pmesh.areas[i] = RC_WALKABLE_AREA) then
         m_pmesh.areas[i] := Byte(SAMPLE_POLYAREA_GROUND);
 
@@ -643,7 +742,7 @@ begin
       begin
         m_pmesh.flags[i] := Byte(SAMPLE_POLYFLAGS_WALK) or Byte(SAMPLE_POLYFLAGS_DOOR);
       end;
-    end;
+    end;}
 
     FillChar(params, sizeof(params), 0);
     params.verts := m_pmesh.verts;
@@ -705,6 +804,8 @@ begin
   m_ctx.log(RC_LOG_PROGRESS, Format('>> Polymesh: %d vertices  %d polygons', [m_pmesh.nverts, m_pmesh.npolys]));
 
   m_totalBuildTimeMs := m_ctx.getAccumulatedTime(RC_TIMER_TOTAL)/1000.0;
+
+  handleGUI(nil);
 
   if (m_tool <> nil) then
     m_tool.init(Self);

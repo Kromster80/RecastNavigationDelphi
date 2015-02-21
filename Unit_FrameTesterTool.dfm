@@ -1,7 +1,7 @@
 object FrameTesterTool: TFrameTesterTool
   Left = 0
   Top = 0
-  Width = 320
+  Width = 249
   Height = 386
   TabOrder = 0
   object Label1: TLabel
@@ -21,7 +21,7 @@ object FrameTesterTool: TFrameTesterTool
   object rgToolMode: TRadioGroup
     Left = 8
     Top = 8
-    Width = 305
+    Width = 233
     Height = 137
     Caption = 'rgToolMode'
     Items.Strings = (

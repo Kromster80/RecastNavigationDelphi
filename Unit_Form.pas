@@ -3,51 +3,21 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, ComCtrls, Forms, StrUtils,
   StdCtrls, ExtCtrls, CheckLst, Spin, Math, Dialogs, dglOpenGL, KromOGLUtils,
-  RN_InputGeom, RN_Recast, RN_SampleInterfaces, RN_SampleSoloMesh;
+  RN_InputGeom, RN_Recast, RN_SampleInterfaces, RN_Sample, RN_SampleSoloMesh, RN_SampleTileMesh;
 
 type
   TForm1 = class(TForm)
     Panel3: TPanel;
     Timer1: TTimer;
-    Button1: TButton;
-    rgDrawMode: TRadioGroup;
     Memo1: TMemo;
-    GroupBox1: TGroupBox;
-    seCellSize: TSpinEdit;
-    seMaxSampleError: TSpinEdit;
-    seSampleDistance: TSpinEdit;
-    seVertsPerPoly: TSpinEdit;
-    seMaxEdgeError: TSpinEdit;
-    seMaxEdgeLength: TSpinEdit;
-    rgPartitioning: TRadioGroup;
-    seMergedRegionSize: TSpinEdit;
-    seMinRegionSize: TSpinEdit;
-    seMaxSlope: TSpinEdit;
-    seMaxClimb: TSpinEdit;
-    seAgentRadius: TSpinEdit;
-    seAgentHeight: TSpinEdit;
-    seCellHeight: TSpinEdit;
-    chkKeepIntermediateResults: TCheckBox;
-    rgInputMesh: TRadioGroup;
-    rgChooseSample: TRadioGroup;
-    CheckBox2: TCheckBox;
-    CheckBox1: TCheckBox;
-    Label13: TLabel;
-    Label12: TLabel;
-    Label11: TLabel;
-    Label10: TLabel;
-    Label9: TLabel;
-    Label8: TLabel;
-    Label7: TLabel;
-    Label6: TLabel;
-    Label5: TLabel;
-    Label4: TLabel;
-    Label3: TLabel;
-    Label2: TLabel;
-    Label1: TLabel;
+    gbSample: TGroupBox;
     rgTool: TRadioGroup;
     gbTool: TGroupBox;
     Panel1: TPanel;
+    rgInputMesh: TRadioGroup;
+    rgChooseSample: TRadioGroup;
+    CheckBox1: TCheckBox;
+    btnBuild: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
@@ -56,11 +26,9 @@ type
     procedure Panel3MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure Timer1Timer(Sender: TObject);
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
-    procedure Button1Click(Sender: TObject);
-    procedure rgDrawModeClick(Sender: TObject);
-    procedure chkKeepIntermediateResultsClick(Sender: TObject);
-    procedure rgToolClick(Sender: TObject);
+    procedure btnBuildClick(Sender: TObject);
     procedure btnToolClick(Sender: TObject);
+    procedure rgChooseSampleClick(Sender: TObject);
   private
     h_DC: HDC;
     h_RC: HGLRC;
@@ -75,12 +43,10 @@ type
     fRayS: array [0..2] of Single;
     fRayE: array [0..2] of Single;
 
-    fCtx: TBuildContext;
     fGeom: TInputGeom;
-    fSample: TSample_SoloMesh;
+    fSample: TSample;
 
     procedure InitGL;
-    procedure UpdateGUI;
     procedure UpdateModelViewProjection;
   end;
 
@@ -89,9 +55,25 @@ var
 
 
 implementation
-uses RN_RecastDump, RN_Sample;
+uses RN_RecastDump;
 
 {$R *.dfm}
+
+function ScanObjFiles(aPath: string): string;
+var
+  SearchRec: TSearchRec;
+begin
+  Result := '';
+
+  if not DirectoryExists(aPath) then Exit;
+
+  FindFirst(aPath + '*.obj', faAnyFile - faDirectory, SearchRec);
+  repeat
+    Result := Result + ChangeFileExt(SearchRec.Name, '') + sLineBreak;
+  until (FindNext(SearchRec) <> 0);
+  FindClose(SearchRec);
+end;
+
 
 procedure TForm1.InitGL;
 begin
@@ -122,31 +104,13 @@ begin
 end;
 
 
-procedure TForm1.UpdateGUI;
-begin
-  seCellSize.Value := Round(fSample.m_cellSize * 10);
-  seCellHeight.Value := Round(fSample.m_cellHeight * 10);
-  seAgentHeight.Value := Round(fSample.m_agentHeight * 10);
-  seAgentRadius.Value := Round(fSample.m_agentRadius * 10);
-  seMaxClimb.Value := Round(fSample.m_agentMaxClimb * 10);
-  seMaxSlope.Value := Round(fSample.m_agentMaxSlope);
-
-  seMinRegionSize.Value := Round(fSample.m_regionMinSize);
-  seMergedRegionSize.Value := Round(fSample.m_regionMergeSize);
-  seMaxEdgeLength.Value := Round(fSample.m_edgeMaxLen);
-  seMaxEdgeError.Value := Round(fSample.m_edgeMaxError * 10);
-  seVertsPerPoly.Value := Round(fSample.m_vertsPerPoly);
-  seSampleDistance.Value := Round(fSample.m_detailSampleDist);
-  seMaxSampleError.Value := Round(fSample.m_detailSampleMaxError);
-  rgPartitioning.ItemIndex := Byte(fSample.m_partitionType);
-end;
-
-
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   Set8087CW($133F);
 
-  fExeDir := ExtractFilePath(Application.ExeName) + '..\..\';
+  fExeDir := ExtractFilePath(Application.ExeName);
+
+  rgInputMesh.Items.Text := ScanObjFiles(fExeDir);
 
   fDist := 100;
   fRotateY := -45;
@@ -155,10 +119,8 @@ begin
 
   fRotateX := 0;
 
-  fSample := TSample_SoloMesh.Create(gbTool);
-
-  UpdateGUI;
-  Button1Click(nil);
+  rgChooseSampleClick(nil);
+  btnBuildClick(nil);
 
   Application.OnIdle := DoIdle;
 end;
@@ -168,7 +130,6 @@ procedure TForm1.FormDestroy(Sender: TObject);
 begin
   fGeom.Free;
   fSample.Free;
-//  fCtx.Free;
 end;
 
 
@@ -190,14 +151,14 @@ begin
 end;
 
 
-procedure TForm1.rgDrawModeClick(Sender: TObject);
+procedure TForm1.rgChooseSampleClick(Sender: TObject);
 begin
-  fSample.drawMode := TDrawMode(rgDrawMode.ItemIndex);
-end;
+  FreeAndNil(fSample);
 
-procedure TForm1.rgToolClick(Sender: TObject);
-begin
-  fSample.setToolType(TSampleToolType(rgTool.ItemIndex));
+  case rgChooseSample.ItemIndex of
+    0: fSample := TSample_SoloMesh.Create(gbSample, gbTool, rgTool);
+    1: fSample := TSample_TileMesh.Create(gbSample, gbTool, rgTool);
+  end;
 end;
 
 procedure TForm1.Panel3MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -249,69 +210,35 @@ begin
 end;
 
 
-procedure TForm1.Button1Click(Sender: TObject);
+procedure TForm1.btnBuildClick(Sender: TObject);
 var
+  ctx: TBuildContext;
   meshName: string;
   I: Integer;
 begin
-  fCtx := TBuildContext.Create;
+  ctx := TBuildContext.Create;
 
-  meshName := ExtractFilePath(Application.ExeName) + rgInputMesh.Items[rgInputMesh.ItemIndex] + '.obj';
+  meshName := fExeDir + rgInputMesh.Items[rgInputMesh.ItemIndex] + '.obj';
   fGeom := TInputGeom.Create;
-  fGeom.loadMesh(fCtx, meshName);
+  fGeom.loadMesh(ctx, meshName);
 
-  // Recreate the Sample for new Build
-  fSample.Free;
-  fSample := TSample_SoloMesh.Create(gbTool);
-
-  fSample.setContext := fCtx;
-
-  fSample.m_cellSize := seCellSize.Value / 10;
-  fSample.m_cellHeight := seCellHeight.Value / 10;
-  fSample.m_agentHeight := seAgentHeight.Value / 10;
-  fSample.m_agentRadius := seAgentRadius.Value / 10;
-  fSample.m_agentMaxClimb := seMaxClimb.Value / 10;
-  fSample.m_agentMaxSlope := seMaxSlope.Value;
-
-  fSample.m_regionMinSize := seMinRegionSize.Value;
-  fSample.m_regionMergeSize := seMergedRegionSize.Value;
-  fSample.m_edgeMaxLen := seMaxEdgeLength.Value;
-  fSample.m_edgeMaxError := seMaxEdgeError.Value / 10;
-  fSample.m_vertsPerPoly := seVertsPerPoly.Value;
-  fSample.m_detailSampleDist := seSampleDistance.Value;
-  fSample.m_detailSampleMaxError := seMaxSampleError.Value;
-  fSample.m_partitionType := TSamplePartitionType(rgPartitioning.ItemIndex);
+  fSample.setContext := ctx;
 
   fSample.handleMeshChanged(fGeom);
   fSample.handleSettings;
-  fCtx.resetLog();
+  ctx.resetLog();
   if fSample.handleBuild() then
-    fCtx.dumpLog(Format('Build log %s: ', [meshName]));
+    ctx.dumpLog(Format('Build log %s: ', [meshName]));
 
-  rgDrawMode.Items.Text := fSample.getDrawModeItems;
-  for I := 0 to rgDrawMode.Items.Count - 1 do
-    rgDrawMode.Buttons[I].Enabled := RightStr(rgDrawMode.Items[I], 1) <> ' ';
-  rgDrawMode.ItemIndex := 0;
+  for I := 0 to ctx.getLogCount - 1 do
+    Memo1.Lines.Append(ctx.getLogText(I));
 
-  rgTool.Items.Text := fSample.getToolItems;
-  for I := 0 to rgTool.Items.Count - 1 do
-    rgTool.Buttons[I].Enabled := RightStr(rgTool.Items[I], 1) <> ' ';
-  rgTool.ItemIndex := 0;
-
-  for I := 0 to fCtx.getLogCount - 1 do
-    Memo1.Lines.Append(fCtx.getLogText(I));
-
-  fCtx.Free;
+  ctx.Free;
 end;
 
 procedure TForm1.btnToolClick(Sender: TObject);
 begin
   fSample.handleMenu(Sender);
-end;
-
-procedure TForm1.chkKeepIntermediateResultsClick(Sender: TObject);
-begin
-  fSample.keepIntermediateResults := chkKeepIntermediateResults.Checked;
 end;
 
 procedure TForm1.DoIdle(Sender: TObject; var Done: Boolean);
@@ -348,7 +275,8 @@ end;
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
   Caption := 'Pathfinding Recast/Detour/Crowd ' + Format('%.1f', [1000 / fFrameTime]);
-  fSample.handleUpdate(0.05);
+  if fSample <> nil then
+    fSample.handleUpdate(0.05);
 end;
 
 

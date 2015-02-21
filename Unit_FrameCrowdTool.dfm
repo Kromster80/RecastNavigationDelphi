@@ -1,7 +1,7 @@
 object FrameCrowdTool: TFrameCrowdTool
   Left = 0
   Top = 0
-  Width = 320
+  Width = 249
   Height = 240
   TabOrder = 0
   object Label1: TLabel
@@ -62,6 +62,6 @@ object FrameCrowdTool: TFrameCrowdTool
     Width = 73
     Height = 17
     Caption = 'Separation'
-    TabOrder = 6
+    TabOrder = 5
   end
 end
