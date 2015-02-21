@@ -95,10 +95,10 @@ procedure duDebugDrawBox(dd: TduDebugDraw; minx, miny, minz: Single;
 procedure duDebugDrawCylinder(dd: TduDebugDraw; minx, miny, minz: Single;
              maxx, maxy, maxz: Single; col: Cardinal);
 
-{procedure duDebugDrawGridXZ(dd: TduDebugDraw; const ox, oy, oz: Single;
-             const int w, const int h, const float size,
+procedure duDebugDrawGridXZ(dd: TduDebugDraw; ox, oy, oz: Single;
+             w, h: Integer; size: Single;
              const col: Cardinal; const lineWidth: Single);
-}
+
 
 // Versions without begin/end, can be used to draw multiple primitives.
 procedure duAppendCylinderWire(dd: TduDebugDraw; minx, miny, minz: Single;
@@ -329,25 +329,26 @@ begin
   dd.&end();
 end;
 
-{procedure duDebugDrawGridXZ(dd: TduDebugDraw; const float ox, const float oy, const float oz,
-             const int w, const int h, const float size,
-             const col: Cardinal; const lineWidth: Single)
+procedure duDebugDrawGridXZ(dd: TduDebugDraw; ox, oy, oz: Single;
+             w, h: Integer; size: Single;
+             const col: Cardinal; const lineWidth: Single);
+var i: Integer;
 begin
   if (dd = nil) then Exit;
 
   dd.&begin(DU_DRAW_LINES, lineWidth);
-  for (int i := 0; i <= h; ++i)
+  for i := 0 to h do
   begin
     dd.vertex(ox,oy,oz+i*size, col);
     dd.vertex(ox+w*size,oy,oz+i*size, col);
   end;
-  for (int i := 0; i <= w; ++i)
+  for i := 0 to w do
   begin
     dd.vertex(ox+i*size,oy,oz, col);
     dd.vertex(ox+i*size,oy,oz+h*size, col);
   end;
   dd.&end();
-end;}
+end;
 
 
 procedure duAppendCylinderWire(dd: TduDebugDraw; minx, miny, minz: Single;
