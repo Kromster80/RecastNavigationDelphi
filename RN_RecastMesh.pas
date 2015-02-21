@@ -494,8 +494,8 @@ end;
 
 function uleft(const a,b,c: PWord): Boolean;
 begin
-  Result := (b[0] - a[0]) * (c[2] - a[2]) -
-       (c[0] - a[0]) * (b[2] - a[2]) < 0;
+  Result := (Integer(b[0]) - Integer(a[0])) * (Integer(c[2]) - Integer(a[2])) -
+       (Integer(c[0]) - Integer(a[0])) * (Integer(b[2]) - Integer(a[2])) < 0;
 end;
 
 function getPolyMergeValue(pa, pb: PWord;
@@ -557,8 +557,8 @@ begin
   va := pa[ea^];
   vb := pa[(ea^+1) mod na];
 
-  dx := verts[va*3+0] - verts[vb*3+0];
-  dy := verts[va*3+2] - verts[vb*3+2];
+  dx := Integer(verts[va*3+0]) - Integer(verts[vb*3+0]);
+  dy := Integer(verts[va*3+2]) - Integer(verts[vb*3+2]);
 
   Result := dx*dx + dy*dy;
 end;
@@ -780,7 +780,7 @@ begin
       if (p <> p2) then
         Move(p2^,p^,sizeof(Word)*nvp);
       //memset(p+nvp,0xff,sizeof(unsigned short)*nvp);
-      FillChar(p[nvp],sizeof(Word)*nvp, $ff);
+      FillChar(p[nvp], sizeof(Word)*nvp, $ff);
       mesh.regs[i] := mesh.regs[mesh.npolys-1];
       mesh.areas[i] := mesh.areas[mesh.npolys-1];
       Dec(mesh.npolys);
@@ -791,7 +791,7 @@ begin
   end;
 
   // Remove vertex.
-  for i := Byte(rem) to mesh.nverts - 1 do
+  for i := Integer(rem) to mesh.nverts - 2 do
   begin
     mesh.verts[i*3+0] := mesh.verts[(i+1)*3+0];
     mesh.verts[i*3+1] := mesh.verts[(i+1)*3+1];
@@ -934,8 +934,8 @@ begin
         for k := j+1 to npolys - 1 do
         begin
           pk := @polys[k*nvp];
-          //int ea, eb;
-          v := getPolyMergeValue(pj, pk, @mesh.verts, @ea, @eb, nvp);
+
+          v := getPolyMergeValue(pj, pk, mesh.verts, @ea, @eb, nvp);
           if (v > bestMergeVal) then
           begin
             bestMergeVal := v;
