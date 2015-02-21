@@ -35,6 +35,6 @@ Port of Recast Navigation into Delphi
 
 **Todos:**
  - Fix plethora of memory leaks around the code.
- - TileMesh and TempObstacles demos.
+ - TempObstacles demo.
  - Some parts are commented out, waiting to be ported.
  - Sync with current state of the source code.
