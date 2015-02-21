@@ -19,7 +19,8 @@
 
 unit RN_NavMeshTesterTool;
 interface
-uses Classes, Controls, StdCtrls, ExtCtrls, Unit_FrameTesterTool,
+uses
+  Classes, Controls, StdCtrls, ExtCtrls, Unit_FrameTesterTool,
   RN_DetourNavMesh, RN_DetourNavMeshHelper, RN_DetourNavMeshQuery, RN_DetourStatus, RN_Sample;
 
 type
@@ -1221,7 +1222,7 @@ begin
   begin
     duDebugDrawNavMeshPoly(dd, m_navMesh, m_startRef, startCol);
     dd.depthMask(false);
-    duDebugDrawCircle(&dd, m_spos[0], m_spos[1]+agentHeight/2, m_spos[2], m_distanceToWall, duRGBA(64,16,0,220), 2.0);
+    duDebugDrawCircle(dd, m_spos[0], m_spos[1]+agentHeight/2, m_spos[2], m_distanceToWall, duRGBA(64,16,0,220), 2.0);
     dd.&begin(DU_DRAW_LINES, 3.0);
     dd.vertex(m_hitPos[0], m_hitPos[1] + 0.02, m_hitPos[2], duRGBA(0,0,0,192));
     dd.vertex(m_hitPos[0], m_hitPos[1] + agentHeight, m_hitPos[2], duRGBA(0,0,0,192));
@@ -1251,7 +1252,7 @@ begin
       dx := m_epos[0] - m_spos[0];
       dz := m_epos[2] - m_spos[2];
       dist := sqrt(dx*dx + dz*dz);
-      duDebugDrawCircle(&dd, m_spos[0], m_spos[1]+agentHeight/2, m_spos[2], dist, duRGBA(64,16,0,220), 2.0);
+      duDebugDrawCircle(dd, m_spos[0], m_spos[1]+agentHeight/2, m_spos[2], dist, duRGBA(64,16,0,220), 2.0);
       dd.depthMask(true);
     end;
   end
@@ -1353,7 +1354,7 @@ begin
     if (m_sposSet) then
     begin
       dd.depthMask(false);
-      duDebugDrawCircle(&dd, m_spos[0], m_spos[1]+agentHeight/2, m_spos[2], m_neighbourhoodRadius, duRGBA(64,16,0,220), 2.0);
+      duDebugDrawCircle(dd, m_spos[0], m_spos[1]+agentHeight/2, m_spos[2], m_neighbourhoodRadius, duRGBA(64,16,0,220), 2.0);
       dd.depthMask(true);
     end;
   end;
@@ -1370,7 +1371,7 @@ begin
 
     if (m_randPointsInCircle and m_sposSet) then
     begin
-      duDebugDrawCircle(&dd, m_spos[0], m_spos[1]+agentHeight/2, m_spos[2], m_randomRadius, duRGBA(64,16,0,220), 2.0);
+      duDebugDrawCircle(dd, m_spos[0], m_spos[1]+agentHeight/2, m_spos[2], m_randomRadius, duRGBA(64,16,0,220), 2.0);
     end;
   end;
 
@@ -1405,9 +1406,9 @@ begin
   dd.depthMask(false);
 
   // Agent dimensions.
-  duDebugDrawCylinderWire(&dd, pos[0]-r, pos[1]+0.02, pos[2]-r, pos[0]+r, pos[1]+h, pos[2]+r, col, 2.0);
+  duDebugDrawCylinderWire(dd, pos[0]-r, pos[1]+0.02, pos[2]-r, pos[0]+r, pos[1]+h, pos[2]+r, col, 2.0);
 
-  duDebugDrawCircle(&dd, pos[0],pos[1]+c,pos[2],r,duRGBA(0,0,0,64),1.0);
+  duDebugDrawCircle(dd, pos[0],pos[1]+c,pos[2],r,duRGBA(0,0,0,64),1.0);
 
   colb := duRGBA(0,0,0,196);
   dd.&begin(DU_DRAW_LINES);
