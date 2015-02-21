@@ -143,6 +143,8 @@ begin
   begin
     s := sl[j];
 
+    if Length(s) = 0 then Continue;
+
     if s[Low(s)] = '#' then
       Continue
     else
