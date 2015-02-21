@@ -63,7 +63,7 @@ procedure drawPolyBoundaries(dd: TduDebugDraw; tile: PdtMeshTile;
                  col: Cardinal; linew: Single;
                  inner: Boolean);
 const thr = 0.01*0.01;
-var i,j,nj,m,n: Integer; p: PdtPoly; pd: PdtPolyDetail; c,k: Cardinal; con: Boolean; v0,v1: PSingle; t: PByte;
+var i,j,nj,m,n,k: Integer; p: PdtPoly; pd: PdtPolyDetail; c,kl: Cardinal; con: Boolean; v0,v1: PSingle; t: PByte;
 tv: array [0..2] of PSingle;
 begin
   dd.&begin(DU_DRAW_LINES, linew);
@@ -86,16 +86,16 @@ begin
         if (p.neis[j] and DT_EXT_LINK) <> 0 then
         begin
           con := false;
-          k := p.firstLink;
-          while (k <> DT_NULL_LINK) do
+          kl := p.firstLink;
+          while (kl <> DT_NULL_LINK) do
           begin
-            if (tile.links[k].edge = j) then
+            if (tile.links[kl].edge = j) then
             begin
               con := true;
               break;
             end;
 
-            k := tile.links[k].next;
+            kl := tile.links[kl].next;
           end;
           if (con) then
             c := duRGBA(255,255,255,48)
