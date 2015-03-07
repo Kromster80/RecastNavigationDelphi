@@ -90,8 +90,10 @@ type
 
     procedure cleanup();
 
-    //procedure saveAll(const path: string; mesh: TdtNavMesh);
-    //function loadAll(const path: string): TdtNavMesh;
+  public
+    //Delphi. Moved to class public to access from outside
+    class procedure saveAll(const path: string; mesh: TdtNavMesh);
+    class function loadAll(const path: string): TdtNavMesh;
 
   public
     constructor Create(aSampleFrame, aToolFrame: TWinControl; aTools: TRadioGroup);
@@ -229,108 +231,95 @@ type
     dataSize: Integer;
   end;
 
-{procedure TSample_TileMesh.saveAll(const path: string; mesh: TdtNavMesh);
+class procedure TSample_TileMesh.saveAll(const path: string; mesh: TdtNavMesh);
+var
+  ms: TMemoryStream;
+  header: TNavMeshSetHeader;
+  tileHeader: TNavMeshTileHeader;
+  i: Integer; tile: PdtMeshTile;
 begin
   if (mesh = nil) then Exit;
 
-  FILE* fp := fopen(path, "wb");
-  if (!fp)
-    return;
+  ms := TMemoryStream.Create;
 
   // Store header.
-  NavMeshSetHeader header;
   header.magic := NAVMESHSET_MAGIC;
   header.version := NAVMESHSET_VERSION;
   header.numTiles := 0;
-  for (int i := 0; i < mesh->getMaxTiles(); ++i)
+  for i := 0 to mesh.getMaxTiles - 1 do
   begin
-    const dtMeshTile* tile := mesh->getTile(i);
-    if (!tile || !tile->header || !tile->dataSize) continue;
-    header.numTiles++;
+    tile := mesh.getTile(i);
+    if (tile = nil) or (tile.header = nil) or (tile.dataSize = 0) then Continue;
+    Inc(header.numTiles);
   end;
-  memcpy(&header.params, mesh->getParams(), sizeof(dtNavMeshParams));
-  fwrite(&header, sizeof(NavMeshSetHeader), 1, fp);
+  Move(mesh.getParams^, header.params, SizeOf(TdtNavMeshParams));
+  ms.Write(header, SizeOf(TNavMeshSetHeader));
 
   // Store tiles.
-  for (int i := 0; i < mesh->getMaxTiles(); ++i)
+  for i := 0 to mesh.getMaxTiles - 1 do
   begin
-    const dtMeshTile* tile := mesh->getTile(i);
-    if (!tile || !tile->header || !tile->dataSize) continue;
+    tile := mesh.getTile(i);
+    if (tile = nil) or (tile.header = nil) or (tile.dataSize = 0) then Continue;
 
-    NavMeshTileHeader tileHeader;
-    tileHeader.tileRef := mesh->getTileRef(tile);
-    tileHeader.dataSize := tile->dataSize;
-    fwrite(&tileHeader, sizeof(tileHeader), 1, fp);
+    tileHeader.tileRef := mesh.getTileRef(tile);
+    tileHeader.dataSize := tile.dataSize;
+    ms.Write(tileHeader, SizeOf(TNavMeshTileHeader));
 
-    fwrite(tile->data, tile->dataSize, 1, fp);
+    ms.Write(tile.data^, tile.dataSize);
   end;
 
-  fclose(fp);
-end;}
+  ms.SaveToFile(path);
+  ms.Free;
+end;
 
-{function TSample_TileMesh.loadAll(const path: string): TdtNavMesh;
-var mesh: TdtNavMesh;
+class function TSample_TileMesh.loadAll(const path: string): TdtNavMesh;
+var
+  ms: TMemoryStream;
+  mesh: TdtNavMesh;
+  header: TNavMeshSetHeader; tileHeader: TNavMeshTileHeader; readLen: Integer; status: TdtStatus; i: Integer; data: PByte;
 begin
-  FILE* fp := fopen(path, "rb");
-  if (!fp) return 0;
+  ms := TMemoryStream.Create;
+  try
+    ms.LoadFromFile(path);
 
-  // Read header.
-  NavMeshSetHeader header;
-  size_t readLen := fread(&header, sizeof(NavMeshSetHeader), 1, fp);
-  if (readLen != 1)
-  begin
-    fclose(fp);
-    return 0;
+    // Read header.
+    readLen := ms.Read(header, sizeof(TNavMeshSetHeader));
+    if (readLen <> sizeof(TNavMeshSetHeader)) then
+      Exit(nil);
+    if (header.magic <> NAVMESHSET_MAGIC) then
+      Exit(nil);
+    if (header.version <> NAVMESHSET_VERSION) then
+      Exit(nil);
+
+    mesh := TdtNavMesh.Create;
+
+    status := mesh.init(@header.params);
+    if (dtStatusFailed(status)) then
+      Exit(nil);
+
+    // Read tiles.
+    for i := 0 to header.numTiles - 1 do
+    begin
+      readLen := ms.Read(tileHeader, sizeof(TNavMeshTileHeader));
+      if (readLen <> sizeof(TNavMeshTileHeader)) then
+        Exit(nil);
+
+      if (tileHeader.tileRef = 0) or (tileHeader.dataSize = 0) then
+        Break;
+
+      GetMem(data, tileHeader.dataSize);
+      readLen := ms.Read(data^, tileHeader.dataSize);
+      if (readLen <> tileHeader.dataSize) then
+        Exit(nil);
+
+      mesh.addTile(data, tileHeader.dataSize, 0, tileHeader.tileRef, nil);
+    end;
+  finally
+    ms.Free;
   end;
-  if (header.magic != NAVMESHSET_MAGIC)
-  begin
-    fclose(fp);
-    return 0;
-  end;
-  if (header.version != NAVMESHSET_VERSION)
-  begin
-    fclose(fp);
-    return 0;
-  end;
-
-  dtNavMesh* mesh := dtAllocNavMesh();
-  if (!mesh)
-  begin
-    fclose(fp);
-    return 0;
-  end;
-  dtStatus status := mesh->init(&header.params);
-  if (dtStatusFailed(status))
-  begin
-    fclose(fp);
-    return 0;
-  end;
-
-  // Read tiles.
-  for (int i := 0; i < header.numTiles; ++i)
-  begin
-    NavMeshTileHeader tileHeader;
-    readLen := fread(&tileHeader, sizeof(tileHeader), 1, fp);
-    if (readLen != 1)
-      return 0;
-
-    if (!tileHeader.tileRef || !tileHeader.dataSize)
-      break;
-
-    unsigned char* data := (unsigned char*)dtAlloc(tileHeader.dataSize, DT_ALLOC_PERM);
-    if (!data) break;
-    memset(data, 0, tileHeader.dataSize);
-    readLen := fread(data, tileHeader.dataSize, 1, fp);
-    if (readLen != 1)
-      return 0;
-
-    mesh->addTile(data, tileHeader.dataSize, DT_TILE_FREE_DATA, tileHeader.tileRef, 0);
-  end;
-
-  fclose(fp);
 
   Result := mesh;
-end;}
+end;
 
 procedure TSample_TileMesh.handleSettings();
 var bmin, bmax: PSingle; gw, gh, ts, tw, th: Integer; tileBits, polyBits: Integer;
