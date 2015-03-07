@@ -745,7 +745,6 @@ begin
   nharea := 0;
   GetMem(harea, SizeOf(Integer)*numRemovedVerts*nvp);
 
-  //for (int i = 0; i < mesh.npolys; ++i)
   i := 0;
   while (i < mesh.npolys) do
   begin
@@ -757,7 +756,6 @@ begin
     if (hasRem) then
     begin
       // Collect edges which does not touch the removed vertex.
-      //for (int j := 0, k := nv-1; j < nv; k := j++)
       j := 0;
       k := nv-1;
       while (j < nv) do
@@ -771,7 +769,6 @@ begin
           e[3] := mesh.areas[i];
           Inc(nedges);
         end;
-
         k := j;
         Inc(j);
       end;
@@ -826,7 +823,6 @@ begin
   begin
     match := false;
 
-    //for (int i = 0; i < nedges; ++i)
     i := 0;
     while i < nedges do
     begin
@@ -1206,7 +1202,7 @@ begin
       begin
         //C++ seems to be doing loop increase, so do we
         Inc(i);
-        continue;
+        Continue;
       end;
       if (not removeVertex(ctx, mesh, i, maxTris)) then
       begin
