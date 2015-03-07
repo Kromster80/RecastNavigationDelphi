@@ -2271,8 +2271,6 @@ begin
     // ..
   end;
 
-  //for I := 0 to 4 do aStream.Write(eol, 2);
-
   //m_tiles: PdtMeshTile;
   for I := 0 to m_tileLutSize - 1 do
   begin
