@@ -25,16 +25,17 @@ Port of Recast Navigation into Delphi
  - Delphi needs to wrap overflowing manipulations with a *{$O}* directive to supress errors.
  - Delphi needs manual disposal of objects created within record , as they dont have built-in destructor support in them.
  - To simplify the pointer trickery, *{$POINTERMATH ON}* had to be enabled almost in every unit.
+ - Typed @ operator setting is great help, but sadly it does not work sometimes.
 
  
 **Common pitfalls during porting:**
- - Passing argument *@SomePointer* instead of *SomePointer*
- - Calling *Move/FillChar* methods without swapping arguments places
- - Writing *for .. to .. do* loop instead of *for .. downto .. do* in rare cases
+ - Passing argument *@SomePointer* instead of *SomePointer*. Typed @ helps to catch those, but not always.
+ - Calling *Move/FillChar* methods without swapping arguments places.
+ - Writing *for .. to .. do* loop instead of *for .. downto .. do* in rare cases.
  - 
 
 **Todos:**
  - Fix plethora of memory leaks around the code.
- - TileMesh and TempObstacles demos.
+ - TempObstacles demo.
  - Some parts are commented out, waiting to be ported.
  - Sync with current state of the source code.
