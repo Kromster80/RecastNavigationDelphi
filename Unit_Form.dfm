@@ -68,9 +68,9 @@ object Form1: TForm1
   end
   object gbSample: TGroupBox
     Left = 816
-    Top = 144
+    Top = 160
     Width = 265
-    Height = 593
+    Height = 577
     Anchors = [akTop, akRight, akBottom]
     TabOrder = 2
   end
@@ -85,7 +85,7 @@ object Form1: TForm1
     Left = 816
     Top = 72
     Width = 265
-    Height = 33
+    Height = 49
     Anchors = [akTop, akRight]
     Caption = 'Input Mesh'
     Columns = 3
@@ -113,7 +113,7 @@ object Form1: TForm1
   end
   object CheckBox1: TCheckBox
     Left = 824
-    Top = 16
+    Top = 8
     Width = 65
     Height = 17
     Anchors = [akTop, akRight]
@@ -125,7 +125,7 @@ object Form1: TForm1
   end
   object btnBuild: TButton
     Left = 816
-    Top = 112
+    Top = 128
     Width = 265
     Height = 25
     Anchors = [akTop, akRight]
