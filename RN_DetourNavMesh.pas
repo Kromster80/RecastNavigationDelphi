@@ -2235,7 +2235,7 @@ end;
 
 procedure TdtNavMesh.SaveToStream(aStream: TMemoryStream);
 var
-  I,K: Integer;
+  I: Integer;
   mt: PdtMeshTile;
   mh: TdtMeshHeader;
   //eol: Word;
