@@ -19,7 +19,7 @@
 
 unit RN_MeshLoaderObj;
 interface
-uses Classes, Math, SysUtils, StrUtils, RN_Helper;
+uses Classes, Math, SysUtils, StrUtils, Types, RN_Helper;
 
 type
   TrcMeshLoaderObj = class
@@ -108,13 +108,13 @@ end;
 
 
 function parseFace(row: string; var data: array of Integer; n, vcnt: Integer): Integer;
-var i,j,vi: Integer; items,elements: TArray<string>;
+var i,j,vi: Integer; items,elements: TStringDynArray;
 begin
   j := 0;
-  items := row.Split([' ']);
+  items := SplitString(row, ' ');
   for i := 1 to High(items) do
   begin
-    elements := items[i].Split(['/']);
+    elements := SplitString(items[i], '/');
     vi := StrToInt(elements[0]);
     if vi < 0 then data[j] := vi+vcnt else data[j] := vi-1;
     Inc(j);
