@@ -353,6 +353,9 @@ type
   procedure dtFreeCrowd(var ptr: TdtCrowd);
 
 
+  //Delphi. Added to be accessible from outside this unit, for debug render
+  procedure calcSmoothSteerDirection(const ag: PdtCrowdAgent; dir: PSingle);
+
 ///////////////////////////////////////////////////////////////////////////
 
 // This section contains detailed documentation for members that don't have
@@ -1630,7 +1633,7 @@ begin
         calcStraightSteerDirection(ag, @dvel[0]);
 
       // Calculate speed scale, which tells the agent to slowdown at the end of the path.
-      slowDownRadius := ag.params.radius*2;  // TODO: make less hacky.
+      slowDownRadius := 0.3; // Delphi. Don't slowdown // ag.params.radius*2;  // TODO: make less hacky.
       speedScale := getDistanceToGoal(ag, slowDownRadius) / slowDownRadius;
 
       ag.desiredSpeed := ag.params.maxSpeed;

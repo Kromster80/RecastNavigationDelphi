@@ -1105,7 +1105,7 @@ begin
       if (v[3] and RC_BORDER_VERTEX <> 0) then
       begin
         // This vertex should be removed.
-        vflags[indices[j]] := 1;
+  //TEMP, otherwise polys on Tile edges are missing!!!!!      vflags[indices[j]] := 1;
       end;
     end;
 
