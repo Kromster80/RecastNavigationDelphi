@@ -113,6 +113,7 @@ begin
   j := 0;
   items := SplitString(row, ' ');
   for i := 1 to High(items) do
+  if items[i] <> '' then
   begin
     elements := SplitString(items[i], '/');
     vi := StrToInt(elements[0]);
