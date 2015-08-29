@@ -286,27 +286,55 @@ end;
 procedure TDebugDrawGL.vertex(const pos: PSingle; color: Cardinal);
 begin
   glColor4ubv(PGLubyte(@color));
+  {$IFDEF SWAP_XZY}
+  {$POINTERMATH ON}
+  glVertex3f(pos^, (pos+2)^, (pos+1)^);
+  {$POINTERMATH OFF}
+  {$ENDIF}
+  {$IFNDEF SWAP_XZY}
   glVertex3fv(PGLfloat(pos));
+  {$ENDIF}
 end;
 
 procedure TDebugDrawGL.vertex(const x,y,z: Single; color: Cardinal);
 begin
   glColor4ubv(PGLubyte(@color));
+  {$IFDEF SWAP_XZY}
+  {$POINTERMATH ON}
+  glVertex3f(x,z,y);
+  {$POINTERMATH OFF}
+  {$ENDIF}
+  {$IFNDEF SWAP_XZY}
   glVertex3f(x,y,z);
+  {$ENDIF}
 end;
 
 procedure TDebugDrawGL.vertex(const pos: PSingle; color: Cardinal; uv: PSingle);
 begin
   glColor4ubv(PGLubyte(@color));
   glTexCoord2fv(PGLfloat(uv));
+  {$IFDEF SWAP_XZY}
+  {$POINTERMATH ON}
+  glVertex3f(pos^, (pos+2)^, (pos+1)^);
+  {$POINTERMATH OFF}
+  {$ENDIF}
+  {$IFNDEF SWAP_XZY}
   glVertex3fv(PGLfloat(pos));
+  {$ENDIF}
 end;
 
 procedure TDebugDrawGL.vertex(const x,y,z: Single; color: Cardinal; u,v: Single);
 begin
   glColor4ubv(PGLubyte(@color));
   glTexCoord2f(u,v);
+  {$IFDEF SWAP_XZY}
+  {$POINTERMATH ON}
+  glVertex3f(x,z,y);
+  {$POINTERMATH OFF}
+  {$ENDIF}
+  {$IFNDEF SWAP_XZY}
   glVertex3f(x,y,z);
+  {$ENDIF}
 end;
 
 procedure TDebugDrawGL.&end();
