@@ -51,6 +51,32 @@ type
 implementation
 uses RN_RecastHelper;
 
+function StringLow(const aString: string): Integer;
+begin
+  {$IFDEF FPC}
+    Result := Low(aString);
+  {$ELSE}
+    {$IF CompilerVersion >= 24}
+    Result := Low(aString); // Delphi XE3 and up can use Low(s)
+    {$ELSE}
+    Result := 1;            // Delphi XE2 and below can't use Low(s), but don't have ZEROBASEDSTRINGS either
+    {$IFEND}
+  {$ENDIF}
+end;
+
+function StringHigh(const aString: string): Integer;
+begin
+  {$IFDEF FPC}
+    Result := Length(aString);
+  {$ELSE}
+    {$IF CompilerVersion >= 24}
+    Result := High(aString);    // Delphi XE3 and up can use High(s)
+    {$ELSE}
+    Result := Length(aString);  // Delphi XE2 and below can't use High(s), but don't have ZEROBASEDSTRINGS either
+    {$IFEND}
+  {$ENDIF}
+end;
+
 constructor TrcMeshLoaderObj.Create;
 begin
   inherited;
@@ -146,16 +172,16 @@ begin
 
     if Length(s) = 0 then Continue;
 
-    if s[Low(s)] = '#' then
+    if s[StringLow(s)] = '#' then
       Continue
     else
-    if (s[Low(s)] = 'v') and (s[Low(s)+1] <> 'n') and (s[Low(s)+1] <> 't')  then
+    if (s[StringLow(s)] = 'v') and (s[StringLow(s)+1] <> 'n') and (s[StringLow(s)+1] <> 't')  then
     begin
       // Vertex pos
-      Sscanf(s.Substring(2), '%f %f %f', [@x, @y, @z]);
+      Sscanf(RightStr(s, Length(s) - 2), '%f %f %f', [@x, @y, @z]);
       addVertex(x, y, z, @vcap);
     end else
-    if s[Low(s)] = 'f' then
+    if s[StringLow(s)] = 'f' then
     begin
       // Faces
       nv := parseFace(s, face, 32, m_vertCount);
