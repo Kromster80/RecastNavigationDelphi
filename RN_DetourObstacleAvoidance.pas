@@ -673,8 +673,8 @@ begin
   for j := 0 to nr - 1 do
   begin
     r := (nr-j)/nr;
-    pat[npat*2+0] := ddir[(j mod 1)*3] * r;
-    pat[npat*2+1] := ddir[(j mod 1)*3+2] * r;
+    pat[npat*2+0] := ddir[(j mod 2)*3] * r;
+    pat[npat*2+1] := ddir[(j mod 2)*3+2] * r;
     last1 := @pat[npat*2];
     last2 := last1;
     Inc(npat);
